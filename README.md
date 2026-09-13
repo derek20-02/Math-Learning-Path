@@ -29,6 +29,31 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Team Members
+
+- Daniel Israel Tudela Pacheco
+- Derek Abraham Moscui Maldonado
+- Helama Yamashita Barbour
+- Ivan Nivaldo Sanhueza AntrisIvan Nivaldo Sanhueza Antris
+
+## Project Description
+
+Math Learning Path is a web application designed to help students develop mathematics skills through structured learning activities and practice exercises. Teachers can create and organize activities, assign exercises to students, and monitor their learning progress. Students have their own interface where they can complete assigned activities and track their progress.
+
+## Project Architecture and Governance
+
+### Constitution
+
+- Description: Defines the fundamental principles, style guidelines, and non-negotiable technical constraints that guide the development of this project. It serves as the single source of truth for maintaining consistency in the architecture and code quality.
+
+`\.specify\memory\constitution.md`
+
+### Project Specification
+
+- Description: A technical specification document that details the “what” and “why” of the features. It contains the scope, user stories, and acceptance criteria necessary to implement new capabilities using the Spec-Driven Development approach.
+
+`[\specs\001-math-learning-path\spec.md]`
+
 ## Deploy on Vercel
 
 https://math-learning-path.vercel.app/

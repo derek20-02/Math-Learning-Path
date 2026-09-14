@@ -58,6 +58,6 @@ Math Learning Path is a web application designed to help students develop mathem
 
 https://math-learning-path.vercel.app/
 
-## Project Tracking with Trello
+## Project Tracking with Github Projects
 
-https://trello.com/b/WFDyFXuu/math-learning-path-board
+https://github.com/users/derek20-02/projects/1/views/1

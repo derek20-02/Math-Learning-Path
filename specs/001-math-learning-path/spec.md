@@ -3,22 +3,7 @@
 **Feature Branch**: `001-math-learning-path`
 **Created**: 2026-09-13
 **Status**: Draft
-**Feature Branch**: `001-math-learning-path`
-**Created**: 2026-09-13
-**Status**: Draft
 **Input**: User description: Create a mathematics learning platform for teachers and students with authentication, activity and exercise management, assignments, submissions, and progress dashboards.
-
-## Project Overview
-
-Math Learning Path is a web application that helps students develop mathematics skills through
-structured learning activities and practice exercises. Teachers can organize learning content,
-assign work, and monitor progress. Students can access assigned work, submit answers, and see
-their progress through a learning path.
-
-### Purpose
-
-The product provides a centralized way for teachers to organize mathematics practice and identify
-where students need additional support, while giving students a clear sequence of practice and
 visible evidence of their learning.
 
 ### Target Audience
@@ -188,14 +173,7 @@ teacher dashboard show consistent completion and result information.
 
 ---
 
-[Add more user stories as needed, each with an assigned priority]
-
 ### Edge Cases
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
 
 - Duplicate registration details, invalid credentials, expired sessions, and unauthorized role
   changes MUST produce clear errors without exposing account or student data.
@@ -211,11 +189,6 @@ teacher dashboard show consistent completion and result information.
   no activity assigned.
 
 ## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
 
 ### Functional Requirements
 
@@ -268,7 +241,7 @@ invalid or unauthorized requests.
 | POST | `/api/exercises/:exerciseId/submissions` | Submit an answer | Student assigned to exercise |
 | GET | `/api/teacher/progress` | Read authorized student progress | Teacher |
 
-### Key Entities *(include if feature involves data)*
+### Key Entities
 
 - **User**: An authenticated person with an identifier, account credentials, and exactly one role:
   teacher or student.
@@ -284,11 +257,6 @@ invalid or unauthorized requests.
   exercises, used by both dashboards within their authorization boundaries.
 
 ## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
 
 ### Measurable Outcomes
 

@@ -6,18 +6,23 @@
 
 ## Phase 1: Foundation
 
-- [ ] T001 [P] [DB] Select the persistence provider and add environment-variable documentation in `README.md`.
-- [ ] T002 [P] [BE] Configure Auth.js, session handling, and role claims in `auth.ts` and `app/api/auth/[...nextauth]/route.ts`.
-- [ ] T003 [P] [BE] Create shared authorization and request-validation helpers in `lib/auth/` and `lib/validation/`.
-- [ ] T004 [P] [BE] Configure API error handling and privacy-conscious structured logging in `lib/errors/` and `lib/logging/`.
-- [ ] T005 [P] [FE] Create shared layout, navigation, form, loading, empty, and error UI in `app/components/`.
-- [ ] T006 [P] [FE] Add the selected test runner, accessibility checks, and `test` script to `package.json`.
-- [ ] T007 [DB] Define User, LearningActivity, Exercise, Assignment, Submission, and ProgressRecord schema and migrations in `db/schema/`.
-- [ ] T008 [BE] Add typed domain models and repository/service boundaries in `lib/domain/`.
+-`dani71296`
+
+- [] T001 [P] [DB] Select the persistence provider and add environment-variable documentation in `.env` and group chat.
+- [] T002 [P] [BE] Configure Auth.js, session handling, and role claims in `auth.ts` and `app/api/auth/[...nextauth]/route.ts`.
+- [] T003 [P] [BE] Create shared authorization and request-validation helpers in `lib/auth/` and `lib/validation/`.
+- [] T004 [P] [BE] Configure API error handling and privacy-conscious structured logging in `lib/errors/` and `lib/logging/`.
+- [] T005 [P] [FE] Create shared layout, navigation, form, loading, empty, and error UI in `app/components/`.
+- [] T006 [P] [FE] Add the selected test runner, accessibility checks, and `test` script to `package.json`.
+- [] T007 [DB] Define User, LearningActivity, Exercise, Assignment, Submission, and ProgressRecord schema and migrations in `db/schema/`.
+- [] T008 [BE] Add typed domain models and repository/service boundaries in `lib/domain/`.
 
 **Checkpoint**: Authentication, authorization, persistence, validation, error handling, and test tooling are ready.
 
 ## User Story 1: Sign Up and Role-Based Access (P1)
+
+-`dani71296`
+
 
 - [ ] T009 [P] [DB] Add unique account identity and role constraints in `db/schema/user.ts`.
 - [ ] T010 [P] [BE] Implement `POST /api/auth/signup` validation and account creation in `app/api/auth/signup/route.ts`.
@@ -29,6 +34,8 @@
 
 ## User Story 2: Create a Learning Activity (P1)
 
+-`Ivanov1979`
+
 - [ ] T016 [DB] Add LearningActivity fields, difficulty values, ownership, and timestamps in `db/schema/learning-activity.ts`.
 - [ ] T017 [BE] Implement `POST /api/activities` with teacher authorization and validation in `app/api/activities/route.ts`.
 - [ ] T018 [FE] Build the teacher activity creation form in `app/(teacher)/activities/new/page.tsx`.
@@ -37,6 +44,8 @@
 - [ ] T021 [P] [FE] Test form submission, errors, and accessible labels in `tests/e2e/activity-create.spec.ts`.
 
 ## User Story 3: Read Learning Activities (P1)
+
+-`derek20-02`
 
 - [ ] T022 [BE] Implement `GET /api/activities` and `GET /api/activities/:activityId` with role-scoped visibility.
 - [ ] T023 [FE] Build teacher activity list and detail pages in `app/(teacher)/activities/page.tsx` and `app/(teacher)/activities/[activityId]/page.tsx`.
@@ -47,12 +56,16 @@
 
 ## User Story 4: Update a Learning Activity (P1)
 
+-`Ivanov1979`
+
 - [ ] T028 [BE] Implement `PATCH /api/activities/:activityId` with ownership and field validation.
 - [ ] T029 [FE] Build the teacher activity edit page and optimistic-state rollback in `app/(teacher)/activities/[activityId]/edit/page.tsx`.
 - [ ] T030 [P] [BE] Test successful edits, invalid edits, and student denial in `tests/integration/activities-update.test.ts`.
 - [ ] T031 [P] [FE] Test edit form error and success states in `tests/e2e/activity-update.spec.ts`.
 
 ## User Story 5: Delete a Learning Activity (P2)
+
+-`derek20-02`
 
 - [ ] T032 [BE] Implement `DELETE /api/activities/:activityId` with confirmation-safe historical progress handling.
 - [ ] T033 [FE] Add accessible delete confirmation and cancellation flow to `app/(teacher)/activities/[activityId]/page.tsx`.
@@ -61,6 +74,8 @@
 - [ ] T036 [P] [FE] Test confirmation, cancellation, and success feedback in `tests/e2e/activity-delete.spec.ts`.
 
 ## User Story 6: Manage Exercises and Submit Answers (P1)
+
+-`helaman-Y-B`
 
 - [ ] T037 [DB] Add Exercise, Assignment, and Submission relationships and answer metadata in `db/schema/exercise.ts`.
 - [ ] T038 [BE] Implement exercise list/create routes at `app/api/activities/[activityId]/exercises/route.ts`.
@@ -73,6 +88,8 @@
 - [ ] T045 [P] [FE] Test teacher and student exercise flows in `tests/e2e/exercises.spec.ts`.
 
 ## User Story 7: Track Student and Teacher Progress (P2)
+
+-`helaman-Y-B`
 
 - [ ] T046 [DB] Add progress indexes and consistent aggregation fields for assignments and submissions.
 - [ ] T047 [BE] Implement `GET /api/student/dashboard` with student-only progress scope.

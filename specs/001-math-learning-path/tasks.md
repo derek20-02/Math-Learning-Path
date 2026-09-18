@@ -23,7 +23,6 @@
 
 -`dani71296`
 
-
 - [ ] T009 [P] [DB] Add unique account identity and role constraints in `db/schema/user.ts`.
 - [ ] T010 [P] [BE] Implement `POST /api/auth/signup` validation and account creation in `app/api/auth/signup/route.ts`.
 - [ ] T011 [P] [FE] Build sign-up and login forms in `app/(auth)/signup/page.tsx` and `app/(auth)/login/page.tsx`.

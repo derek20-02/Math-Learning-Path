@@ -41,7 +41,6 @@ export default function ActivityForm() {
             }
 
             setMessage("Activity created successfully.");
-
             setObjective("");
             setDescription("");
             setDifficulty("medium");
@@ -52,33 +51,62 @@ export default function ActivityForm() {
         }
     }
 
+    const inputStyles =
+        "w-full rounded-lg border border-[#CBD5E1] bg-white px-4 py-3 text-[#1E293B] outline-none transition focus:border-[#61A8DF] focus:ring-2 focus:ring-[#61A8DF]/30";
+
     return (
-        <form onSubmit={handleSubmit}>
+        <form
+            onSubmit={handleSubmit}
+            className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8"
+        >
             <div>
-                <label htmlFor="objective">Objective</label>
+                <label
+                    htmlFor="objective"
+                    className="mb-2 block font-semibold text-[#1E293B]"
+                >
+                    Objective
+                </label>
+
                 <input
                     id="objective"
                     name="objective"
                     type="text"
                     value={objective}
                     onChange={(event) => setObjective(event.target.value)}
+                    placeholder="e.g. Identify patterns in numerical sequences"
+                    className={inputStyles}
                     required
                 />
             </div>
 
             <div>
-                <label htmlFor="description">Description</label>
+                <label
+                    htmlFor="description"
+                    className="mb-2 block font-semibold text-[#1E293B]"
+                >
+                    Description
+                </label>
+
                 <textarea
                     id="description"
                     name="description"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
+                    placeholder="Describe what students will do in this activity..."
+                    rows={5}
+                    className={`${inputStyles} resize-y`}
                     required
                 />
             </div>
 
             <div>
-                <label htmlFor="difficulty">Difficulty</label>
+                <label
+                    htmlFor="difficulty"
+                    className="mb-2 block font-semibold text-[#1E293B]"
+                >
+                    Difficulty
+                </label>
+
                 <select
                     id="difficulty"
                     name="difficulty"
@@ -86,6 +114,7 @@ export default function ActivityForm() {
                     onChange={(event) =>
                         setDifficulty(event.target.value as Difficulty)
                     }
+                    className={inputStyles}
                 >
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
@@ -93,13 +122,31 @@ export default function ActivityForm() {
                 </select>
             </div>
 
-            <button type="submit" disabled={isSubmitting}>
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full rounded-lg bg-[#2563EB] px-5 py-3 font-semibold text-white transition hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#61A8DF] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
                 {isSubmitting ? "Creating..." : "Create Activity"}
             </button>
 
-            {error && <p role="alert">{error}</p>}
+            {error && (
+                <p
+                    role="alert"
+                    className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-[#DC2626]"
+                >
+                    {error}
+                </p>
+            )}
 
-            {message && <p role="status">{message}</p>}
+            {message && (
+                <p
+                    role="status"
+                    className="rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-[#15803D]"
+                >
+                    {message}
+                </p>
+            )}
         </form>
     );
 }

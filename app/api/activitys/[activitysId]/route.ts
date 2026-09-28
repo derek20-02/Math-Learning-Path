@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {getActivityById} from "@/app/controllers/ActivityController"
 
-// GET /api/activitys/[id]
+// GET /api/activitys/[activitysId]
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ activitysId: string }> }
 ) {
-  const {id} = await params;
-  return getActivityById(id);
+  const {activitysId} = await params;
+  return getActivityById(activitysId);
 }

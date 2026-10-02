@@ -1,6 +1,6 @@
 import Activities from "@/components/Activities";
 
-export default function studentsActivities() {
+export default function StudentsActivities() {
     return (
         <main className="flex flex-1 flex-col gap-8 bg-zinc-50 p-6 md:p-10">
             <header>

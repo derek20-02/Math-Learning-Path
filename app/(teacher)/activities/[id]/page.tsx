@@ -5,7 +5,7 @@ import Exercise from "@/components/Exercise";
 import { useParams } from "next/navigation";
 
 // Returns all exercises associated with a given activity ID.
-export default function showExercises() {
+export default function ShowExercises() {
   const params = useParams();
   const exerciseId = params.id as string;
   const exercises = getExercisesByActivityId(exerciseId);

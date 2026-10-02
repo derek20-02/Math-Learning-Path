@@ -24,5 +24,7 @@ export type Exercise = {
   prompt: string;
   choices: string[];
   correctAnswer: string;
+  submittedAnswer: string | null;
   explanation: string;
+  isDone: boolean;
 };

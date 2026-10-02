@@ -16,13 +16,28 @@ export default function Exercise({ exercise }: { exercise: Exercise }) {
             key={index}
             className="flex text-[var(--secondaryText)] items-center space-x-2"
           >
-            <input type="radio" name={exercise.id} value={choice} />
+            <input
+              readOnly
+              type="radio"
+              name={exercise.id}
+              value={choice}
+              checked={exercise.submittedAnswer === choice}
+            />
             <span>{choice}</span>
           </label>
         ))}
       </div>
       <p className="text-sm text-muted-foreground text-[var(--secondaryText)] mt-2">
         {exercise.explanation}
+      </p>
+      <p>
+        {exercise.submittedAnswer === null ? (
+          <span className="text-[var(--errorMsg)]">Not answered</span>
+        ) : exercise.submittedAnswer === exercise.correctAnswer ? (
+          <span className="text-[var(--successMsg)]">Correct!</span>
+        ) : (
+          <span className="text-[var(--errorMsg)]">Incorrect.</span>
+        )}
       </p>
     </div>
   );

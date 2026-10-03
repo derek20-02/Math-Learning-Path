@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 type Difficulty = "easy" | "medium" | "hard";
 
 export default function ActivityForm() {
+    const [title, setTitle] = useState("");
     const [objective, setObjective] = useState("");
     const [description, setDescription] = useState("");
     const [difficulty, setDifficulty] = useState<Difficulty>("medium");
@@ -18,6 +19,27 @@ export default function ActivityForm() {
 
         setMessage("");
         setError("");
+
+        const cleanTitle = title.trim();
+        const cleanObjective = objective.trim();
+        const cleanDescription = description.trim();
+
+        // Client-side validation.
+        if (cleanTitle.length < 3) {
+            setError("Title must contain at least 3 characters.");
+            return;
+        }
+
+        if (cleanObjective.length < 5) {
+            setError("Objective must contain at least 5 characters.");
+            return;
+        }
+
+        if (cleanDescription.length < 10) {
+            setError("Description must contain at least 10 characters.");
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -27,8 +49,9 @@ export default function ActivityForm() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    objective,
-                    description,
+                    title: cleanTitle,
+                    objective: cleanObjective,
+                    description: cleanDescription,
                     difficulty,
                 }),
             });
@@ -41,6 +64,7 @@ export default function ActivityForm() {
             }
 
             setMessage("Activity created successfully.");
+            setTitle("");
             setObjective("");
             setDescription("");
             setDifficulty("medium");
@@ -61,6 +85,27 @@ export default function ActivityForm() {
         >
             <div>
                 <label
+                    htmlFor="title"
+                    className="mb-2 block font-semibold text-[#1E293B]"
+                >
+                    Title
+                </label>
+
+                <input
+                    id="title"
+                    name="title"
+                    type="text"
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="e.g. Numerical Sequences"
+                    className={inputStyles}
+                    required
+                    minLength={3}
+                />
+            </div>
+
+            <div>
+                <label
                     htmlFor="objective"
                     className="mb-2 block font-semibold text-[#1E293B]"
                 >
@@ -76,6 +121,7 @@ export default function ActivityForm() {
                     placeholder="e.g. Identify patterns in numerical sequences"
                     className={inputStyles}
                     required
+                    minLength={5}
                 />
             </div>
 
@@ -96,6 +142,7 @@ export default function ActivityForm() {
                     rows={5}
                     className={`${inputStyles} resize-y`}
                     required
+                    minLength={10}
                 />
             </div>
 

@@ -31,6 +31,9 @@ export interface LearningActivity {
   // The teacher who owns the activity.
   teacherId: string;
 
+  // Activity title.
+  title: string;
+
   // Mathematics learning objective.
   objective: string;
 
@@ -55,6 +58,7 @@ export interface LearningActivity {
  * by the server and are not supplied by the form.
  */
 export interface CreateLearningActivityInput {
+  title: string;
   objective: string;
   description: string;
   difficulty: ActivityDifficulty;

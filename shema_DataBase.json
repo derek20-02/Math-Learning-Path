@@ -1,0 +1,238 @@
+[
+
+{
+"ONLY_A_COMMENTARY": "math_learning -> assignment",
+
+  "_id": {
+    "$oid": "66f000000000000000000301"
+  },
+  "activityId": {
+    "$oid": "66f000000000000000000101"
+  },
+  "studentId": {
+    "$oid": "66f000000000000000000003"
+  },
+  "status": "completed",
+  "assignedAt": {
+    "$date": "2026-09-06T00:00:00.000Z"
+  },
+  "dueAt": {
+    "$date": "2026-09-13T00:00:00.000Z"
+  }
+},{
+  "_id": {
+    "$oid": "66f000000000000000000302"
+  },
+  "activityId": {
+    "$oid": "66f000000000000000000101"
+  },
+  "studentId": {
+    "$oid": "66f000000000000000000004"
+  },
+  "status": "in_progress",
+  "assignedAt": {
+    "$date": "2026-09-06T00:00:00.000Z"
+  },
+  "dueAt": {
+    "$date": "2026-09-13T00:00:00.000Z"
+  }
+},
+
+{
+"ONLY_A_COMMENTARY": "math_learning -> exercise",
+
+  "_id": {
+    "$oid": "66f000000000000000000201"
+  },
+  "activityId": {
+    "$oid": "66f000000000000000000101"
+  },
+  "prompt": "¿Cuál fracción es equivalente a 1/2?",
+  "answerRules": {
+    "type": "numeric",
+    "expected": "2/4"
+  },
+  "createdAt": {
+    "$date": "2026-09-05T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-09-05T00:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66f000000000000000000202"
+  },
+  "activityId": {
+    "$oid": "66f000000000000000000101"
+  },
+  "prompt": "Convierte 3/4 a decimal.",
+  "answerRules": {
+    "type": "numeric",
+    "expected": "0.75",
+    "tolerance": 0.01
+  },
+  "createdAt": {
+    "$date": "2026-09-05T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-09-05T00:00:00.000Z"
+  }
+},
+
+
+{
+"ONLY_A_COMMENTARY": "math_learning -> learning_Activity",
+
+  "_id": {
+    "$oid": "66f000000000000000000101"
+  },
+  "title": "Introducción a las fracciones equivalentes",
+  "description": "Actividad guiada para identificar y construir fracciones equivalentes.",
+  "objective": "Comprender la equivalencia entre fracciones y su relación con decimales.",
+  "difficulty": "easy",
+  "teacherId": {
+    "$oid": "66f000000000000000000001"
+  },
+  "status": "active",
+  "createdAt": {
+    "$date": "2026-09-05T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-09-05T00:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66f000000000000000000102"
+  },
+  "title": "Clasificación de figuras geométricas",
+  "description": "Identificar y clasificar polígonos según lados y ángulos.",
+  "objective": "Reconocer propiedades de figuras 2D.",
+  "difficulty": "medium",
+  "teacherId": {
+    "$oid": "66f000000000000000000001"
+  },
+  "status": "active",
+  "createdAt": {
+    "$date": "2026-09-10T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-09-10T00:00:00.000Z"
+  }
+},
+
+
+{
+    "ONLY_A_COMMENTARY": "math_learning -> progress_Record",
+
+  "_id": {
+    "$oid": "66f000000000000000000501"
+  },
+  "studentId": {
+    "$oid": "66f000000000000000000003"
+  },
+  "activityId": {
+    "$oid": "66f000000000000000000101"
+  },
+  "totalExercises": 2,
+  "completedExercises": 2,
+  "completionRate": 1,
+  "status": "completed",
+  "lastUpdated": {
+    "$date": "2026-09-10T00:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66f000000000000000000502"
+  },
+  "studentId": {
+    "$oid": "66f000000000000000000004"
+  },
+  "activityId": {
+    "$oid": "66f000000000000000000101"
+  },
+  "totalExercises": 2,
+  "completedExercises": 1,
+  "completionRate": 0.5,
+  "status": "in_progress",
+  "lastUpdated": {
+    "$date": "2026-09-12T00:00:00.000Z"
+  }
+},
+
+
+{
+"ONLY_A_COMMENTARY": "math_learning -> submission",
+
+  "_id": {
+    "$oid": "66f000000000000000000401"
+  },
+  "exerciseId": {
+    "$oid": "66f000000000000000000201"
+  },
+  "studentId": {
+    "$oid": "66f000000000000000000003"
+  },
+  "assignmentId": {
+    "$oid": "66f000000000000000000301"
+  },
+  "answer": "2/4",
+  "attemptNumber": 1,
+  "isCorrect": true,
+  "status": "graded",
+  "submittedAt": {
+    "$date": "2026-09-10T00:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66f000000000000000000402"
+  },
+  "exerciseId": {
+    "$oid": "66f000000000000000000202"
+  },
+  "studentId": {
+    "$oid": "66f000000000000000000003"
+  },
+  "assignmentId": {
+    "$oid": "66f000000000000000000301"
+  },
+  "answer": "0.75",
+  "attemptNumber": 1,
+  "isCorrect": true,
+  "status": "graded",
+  "submittedAt": {
+    "$date": "2026-09-10T00:00:00.000Z"
+  }
+},
+
+
+{
+"ONLY_A_COMMENTARY": "math_learning -> user",
+    
+  "_id": {
+    "$oid": "66f000000000000000000001"
+  },
+  "name": "Marcela Fuentes",
+  "email": "marcela.fuentes@escuela.test",
+  "password": "fsaf",
+  "role": "teacher",
+  "createdAt": {
+    "$date": "2026-08-21T00:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66f000000000000000000002"
+  },
+  "name": "Rodrigo Salas",
+  "email": "rodrigo.salas@escuela.test",
+  "password": "fsaf",
+  "role": "teacher",
+  "createdAt": {
+    "$date": "2026-08-26T00:00:00.000Z"
+  }
+}
+]

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+
+import { getDb } from "@/lib/mongodb";
 
 import {
     ACTIVITY_DIFFICULTIES,
     ActivityDifficulty,
 } from "@/db/schema/learning-activity";
+
+const COLLECTION_NAME = "learning_Activity";
 
 function isValidDifficulty(value: unknown): value is ActivityDifficulty {
     return (
@@ -18,6 +23,56 @@ interface UpdateActivityInput {
     difficulty?: ActivityDifficulty;
 }
 
+/**
+ * GET /api/activities/:activityId
+ *
+ * Returns one learning activity by MongoDB ObjectId.
+ */
+export async function GET(
+    _request: NextRequest,
+    context: { params: Promise<{ activityId: string }> },
+) {
+    try {
+        const { activityId } = await context.params;
+
+        if (!ObjectId.isValid(activityId)) {
+            return NextResponse.json(
+                { error: "Invalid activity ID." },
+                { status: 400 },
+            );
+        }
+
+        const db = await getDb();
+
+        const activity = await db
+            .collection(COLLECTION_NAME)
+            .findOne({
+                _id: new ObjectId(activityId),
+            });
+
+        if (!activity) {
+            return NextResponse.json(
+                { error: "Activity not found." },
+                { status: 404 },
+            );
+        }
+
+        return NextResponse.json(activity, { status: 200 });
+    } catch (error) {
+        console.error("Error retrieving activity:", error);
+
+        return NextResponse.json(
+            { error: "Unable to retrieve activity." },
+            { status: 500 },
+        );
+    }
+}
+
+/**
+ * PATCH /api/activities/:activityId
+ *
+ * Validates and persists editable activity fields.
+ */
 export async function PATCH(
     request: NextRequest,
     context: { params: Promise<{ activityId: string }> },
@@ -25,16 +80,31 @@ export async function PATCH(
     try {
         const { activityId } = await context.params;
 
-        if (!activityId || activityId.trim() === "") {
+        if (!ObjectId.isValid(activityId)) {
             return NextResponse.json(
-                { error: "Activity ID is required." },
+                { error: "Invalid activity ID." },
                 { status: 400 },
             );
         }
 
-        const body = await request.json();
+        const body: unknown = await request.json();
 
-        const { objective, description, difficulty } = body;
+        if (
+            typeof body !== "object" ||
+            body === null ||
+            Array.isArray(body)
+        ) {
+            return NextResponse.json(
+                { error: "Invalid request body." },
+                { status: 400 },
+            );
+        }
+
+        const {
+            objective,
+            description,
+            difficulty,
+        } = body as Record<string, unknown>;
 
         // At least one editable field must be supplied.
         if (
@@ -43,7 +113,9 @@ export async function PATCH(
             difficulty === undefined
         ) {
             return NextResponse.json(
-                { error: "At least one activity field must be provided." },
+                {
+                    error: "At least one activity field must be provided.",
+                },
                 { status: 400 },
             );
         }
@@ -51,10 +123,15 @@ export async function PATCH(
         // Validate objective when supplied.
         if (
             objective !== undefined &&
-            (typeof objective !== "string" || objective.trim() === "")
+            (
+                typeof objective !== "string" ||
+                objective.trim().length < 5
+            )
         ) {
             return NextResponse.json(
-                { error: "Objective cannot be empty." },
+                {
+                    error: "Objective must contain at least 5 characters.",
+                },
                 { status: 400 },
             );
         }
@@ -62,10 +139,15 @@ export async function PATCH(
         // Validate description when supplied.
         if (
             description !== undefined &&
-            (typeof description !== "string" || description.trim() === "")
+            (
+                typeof description !== "string" ||
+                description.trim().length < 10
+            )
         ) {
             return NextResponse.json(
-                { error: "Description cannot be empty." },
+                {
+                    error: "Description must contain at least 10 characters.",
+                },
                 { status: 400 },
             );
         }
@@ -76,52 +158,85 @@ export async function PATCH(
             !isValidDifficulty(difficulty)
         ) {
             return NextResponse.json(
-                { error: "Difficulty must be easy, medium, or hard." },
+                {
+                    error: "Difficulty must be easy, medium, or hard.",
+                },
                 { status: 400 },
             );
         }
 
         const updates: UpdateActivityInput = {};
 
-        if (objective !== undefined) {
+        if (typeof objective === "string") {
             updates.objective = objective.trim();
         }
 
-        if (description !== undefined) {
+        if (typeof description === "string") {
             updates.description = description.trim();
         }
 
-        if (difficulty !== undefined) {
+        if (difficulty !== undefined && isValidDifficulty(difficulty)) {
             updates.difficulty = difficulty;
         }
 
+        const db = await getDb();
+
+        const collection = db.collection(COLLECTION_NAME);
+
+        const objectId = new ObjectId(activityId);
+
+        // Confirm that the activity exists before updating it.
+        const existingActivity = await collection.findOne({
+            _id: objectId,
+        });
+
+        if (!existingActivity) {
+            return NextResponse.json(
+                { error: "Activity not found." },
+                { status: 404 },
+            );
+        }
+
         /*
-         * TODO: Connect to the shared project Foundation.
+         * TODO AUTHORIZATION:
+         *
+         * Once the team's authentication implementation is integrated:
          *
          * 1. Get the authenticated user from the session.
          * 2. Reject unauthenticated users.
-         * 3. Verify that the authenticated user is a teacher.
-         * 4. Find the activity by activityId.
-         * 5. Verify that activity.teacherId matches the authenticated teacher.
-         * 6. Update the activity in the database.
-         * 7. Update updatedAt.
-         *
-         * Ownership and persistence cannot be completed until the team's
-         * shared authentication/database Foundation is available.
+         * 3. Verify that the user has the teacher role.
+         * 4. Verify that existingActivity.teacherId belongs to that teacher.
          */
+
+        const updatedAt = new Date();
+
+        await collection.updateOne(
+            { _id: objectId },
+            {
+                $set: {
+                    ...updates,
+                    updatedAt,
+                },
+            },
+        );
+
+        const updatedActivity = await collection.findOne({
+            _id: objectId,
+        });
 
         return NextResponse.json(
             {
-                message: "Activity update data is valid.",
-                activityId,
-                updates,
+                message: "Activity updated successfully.",
+                activity: updatedActivity,
             },
             { status: 200 },
         );
-    } catch {
+    } catch (error) {
+        console.error("Error updating activity:", error);
+
         return NextResponse.json(
-            { error: "Invalid request body." },
-            { status: 400 },
+            { error: "Unable to update activity." },
+            { status: 500 },
         );
     }
 }

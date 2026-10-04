@@ -8,7 +8,8 @@ export default function ActivityForm() {
     const [title, setTitle] = useState("");
     const [objective, setObjective] = useState("");
     const [description, setDescription] = useState("");
-    const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+    const [difficulty, setDifficulty] =
+        useState<Difficulty>("medium");
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -59,11 +60,23 @@ export default function ActivityForm() {
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.error ?? "Unable to create activity.");
+                setError(
+                    data.error ?? "Unable to create activity.",
+                );
                 return;
             }
 
-            setMessage("Activity created successfully.");
+            // The POST API returns the MongoDB activity ID.
+            const activityId = data.activity?.id;
+
+            if (activityId) {
+                setMessage(
+                    `Activity created successfully. Activity ID: ${activityId}`,
+                );
+            } else {
+                setMessage("Activity created successfully.");
+            }
+
             setTitle("");
             setObjective("");
             setDescription("");
@@ -96,7 +109,9 @@ export default function ActivityForm() {
                     name="title"
                     type="text"
                     value={title}
-                    onChange={(event) => setTitle(event.target.value)}
+                    onChange={(event) =>
+                        setTitle(event.target.value)
+                    }
                     placeholder="e.g. Numerical Sequences"
                     className={inputStyles}
                     required
@@ -117,7 +132,9 @@ export default function ActivityForm() {
                     name="objective"
                     type="text"
                     value={objective}
-                    onChange={(event) => setObjective(event.target.value)}
+                    onChange={(event) =>
+                        setObjective(event.target.value)
+                    }
                     placeholder="e.g. Identify patterns in numerical sequences"
                     className={inputStyles}
                     required
@@ -137,7 +154,9 @@ export default function ActivityForm() {
                     id="description"
                     name="description"
                     value={description}
-                    onChange={(event) => setDescription(event.target.value)}
+                    onChange={(event) =>
+                        setDescription(event.target.value)
+                    }
                     placeholder="Describe what students will do in this activity..."
                     rows={5}
                     className={`${inputStyles} resize-y`}
@@ -159,7 +178,9 @@ export default function ActivityForm() {
                     name="difficulty"
                     value={difficulty}
                     onChange={(event) =>
-                        setDifficulty(event.target.value as Difficulty)
+                        setDifficulty(
+                            event.target.value as Difficulty,
+                        )
                     }
                     className={inputStyles}
                 >
@@ -174,7 +195,9 @@ export default function ActivityForm() {
                 disabled={isSubmitting}
                 className="w-full rounded-lg bg-[#2563EB] px-5 py-3 font-semibold text-white transition hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#61A8DF] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-                {isSubmitting ? "Creating..." : "Create Activity"}
+                {isSubmitting
+                    ? "Creating..."
+                    : "Create Activity"}
             </button>
 
             {error && (

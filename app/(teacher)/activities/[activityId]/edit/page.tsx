@@ -1,4 +1,12 @@
+import { ObjectId } from "mongodb";
+import { notFound } from "next/navigation";
+
 import ActivityEditForm from "@/app/components/activities/activity-edit-form";
+import { getDb } from "@/lib/mongodb";
+import {
+    ACTIVITY_DIFFICULTIES,
+    ActivityDifficulty,
+} from "@/db/schema/learning-activity";
 
 interface EditActivityPageProps {
     params: Promise<{
@@ -6,24 +14,55 @@ interface EditActivityPageProps {
     }>;
 }
 
+const COLLECTION_NAME = "learning_Activity";
+
+function isValidDifficulty(
+    value: unknown,
+): value is ActivityDifficulty {
+    return (
+        typeof value === "string" &&
+        ACTIVITY_DIFFICULTIES.includes(
+            value as ActivityDifficulty,
+        )
+    );
+}
+
 export default async function EditActivityPage({
     params,
 }: EditActivityPageProps) {
     const { activityId } = await params;
 
-    /*
-     * Temporary activity data for UI development.
-     *
-     * This will be replaced with a database query once the shared
-     * project database and authentication Foundation are available.
-     */
-    const activity = {
-        id: activityId,
-        objective: "Identify patterns in numerical sequences",
-        description:
-            "Complete numerical sequences using the pattern rule.",
-        difficulty: "medium" as const,
-    };
+    // Validate the MongoDB ObjectId before querying the database.
+    if (!ObjectId.isValid(activityId)) {
+        notFound();
+    }
+
+    const db = await getDb();
+
+    const activity = await db
+        .collection(COLLECTION_NAME)
+        .findOne({
+            _id: new ObjectId(activityId),
+        });
+
+    if (!activity) {
+        notFound();
+    }
+
+    const objective =
+        typeof activity.objective === "string"
+            ? activity.objective
+            : "";
+
+    const description =
+        typeof activity.description === "string"
+            ? activity.description
+            : "";
+
+    const difficulty: ActivityDifficulty =
+        isValidDifficulty(activity.difficulty)
+            ? activity.difficulty
+            : "medium";
 
     return (
         <main className="min-h-screen bg-[#F5F9FC]">
@@ -46,16 +85,16 @@ export default async function EditActivityPage({
                     </h2>
 
                     <p className="mt-2 text-[#64748B]">
-                        Update the objective, description, or difficulty of this
-                        learning activity.
+                        Update the objective, description, or difficulty
+                        of this learning activity.
                     </p>
                 </div>
 
                 <ActivityEditForm
-                    activityId={activity.id}
-                    initialObjective={activity.objective}
-                    initialDescription={activity.description}
-                    initialDifficulty={activity.difficulty}
+                    activityId={activityId}
+                    initialObjective={objective}
+                    initialDescription={description}
+                    initialDifficulty={difficulty}
                 />
             </section>
         </main>

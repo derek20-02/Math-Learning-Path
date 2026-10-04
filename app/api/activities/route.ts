@@ -6,6 +6,8 @@ import {
     CreateLearningActivityInput,
 } from "@/db/schema/learning-activity";
 
+import { getDb } from "@/lib/mongodb";
+
 /**
  * Checks whether a value is a valid activity difficulty.
  */
@@ -19,11 +21,7 @@ function isValidDifficulty(value: unknown): value is ActivityDifficulty {
 /**
  * POST /api/activities
  *
- * Validates the information required to create a learning activity.
- *
- * Database persistence will be connected to the team's shared
- * ActivityModel once the database implementation is available
- * on the working branch.
+ * Validates and creates a new learning activity.
  */
 export async function POST(request: NextRequest) {
     try {
@@ -103,31 +101,47 @@ export async function POST(request: NextRequest) {
             difficulty,
         };
 
+        const db = await getDb();
+
+        const now = new Date();
+
         /*
          * TODO:
-         * Connect this POST endpoint to the team's shared ActivityModel
-         * after the database implementation is merged into main.
+         * Replace this temporary teacherId after the team's authentication
+         * implementation is integrated.
          *
-         * The server will also provide:
-         * - teacherId from authentication
-         * - status
-         * - createdAt
-         * - updatedAt
+         * T017 requires the authenticated teacher to provide ownership.
          */
+        const activity = {
+            ...activityInput,
+            teacherId: null,
+            status: "draft",
+            createdAt: now,
+            updatedAt: now,
+        };
+
+        const result = await db
+            .collection("learning_Activity")
+            .insertOne(activity);
 
         return NextResponse.json(
             {
-                message: "Activity data is valid and ready to be saved.",
-                activity: activityInput,
+                message: "Activity created successfully.",
+                activity: {
+                    id: result.insertedId.toString(),
+                    ...activity,
+                },
             },
-            { status: 200 },
+            { status: 201 },
         );
-    } catch {
+    } catch (error) {
+        console.error("Error creating activity:", error);
+
         return NextResponse.json(
             {
-                error: "Invalid request body.",
+                error: "Unable to create activity.",
             },
-            { status: 400 },
+            { status: 500 },
         );
     }
 }

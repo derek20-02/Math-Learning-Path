@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
 import { getDb } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/auth/authorization";
 
 import {
     ACTIVITY_DIFFICULTIES,
@@ -21,6 +22,11 @@ interface UpdateActivityInput {
     objective?: string;
     description?: string;
     difficulty?: ActivityDifficulty;
+}
+
+interface AuthenticatedUser {
+    id?: string;
+    role?: string;
 }
 
 /**
@@ -71,15 +77,43 @@ export async function GET(
 /**
  * PATCH /api/activities/:activityId
  *
- * Validates and persists editable activity fields.
+ * Updates a learning activity owned by the authenticated teacher.
  */
 export async function PATCH(
     request: NextRequest,
     context: { params: Promise<{ activityId: string }> },
 ) {
     try {
+        // Verify authentication.
+        const user = await getCurrentUser();
+
+        if (!user) {
+            return NextResponse.json(
+                { error: "Unauthorized." },
+                { status: 401 },
+            );
+        }
+
+        const authenticatedUser = user as AuthenticatedUser;
+
+        // Only teachers can edit activities.
+        if (authenticatedUser.role !== "teacher") {
+            return NextResponse.json(
+                { error: "Forbidden: teacher access required." },
+                { status: 403 },
+            );
+        }
+
+        if (!authenticatedUser.id) {
+            return NextResponse.json(
+                { error: "Unauthorized." },
+                { status: 401 },
+            );
+        }
+
         const { activityId } = await context.params;
 
+        // Validate MongoDB ObjectId.
         if (!ObjectId.isValid(activityId)) {
             return NextResponse.json(
                 { error: "Invalid activity ID." },
@@ -106,7 +140,7 @@ export async function PATCH(
             difficulty,
         } = body as Record<string, unknown>;
 
-        // At least one editable field must be supplied.
+        // At least one editable field must be provided.
         if (
             objective === undefined &&
             description === undefined &&
@@ -120,7 +154,7 @@ export async function PATCH(
             );
         }
 
-        // Validate objective when supplied.
+        // Validate objective.
         if (
             objective !== undefined &&
             (
@@ -136,7 +170,7 @@ export async function PATCH(
             );
         }
 
-        // Validate description when supplied.
+        // Validate description.
         if (
             description !== undefined &&
             (
@@ -152,7 +186,7 @@ export async function PATCH(
             );
         }
 
-        // Validate difficulty when supplied.
+        // Validate difficulty.
         if (
             difficulty !== undefined &&
             !isValidDifficulty(difficulty)
@@ -175,17 +209,18 @@ export async function PATCH(
             updates.description = description.trim();
         }
 
-        if (difficulty !== undefined && isValidDifficulty(difficulty)) {
+        if (
+            difficulty !== undefined &&
+            isValidDifficulty(difficulty)
+        ) {
             updates.difficulty = difficulty;
         }
 
         const db = await getDb();
-
         const collection = db.collection(COLLECTION_NAME);
-
         const objectId = new ObjectId(activityId);
 
-        // Confirm that the activity exists before updating it.
+        // Confirm that the activity exists.
         const existingActivity = await collection.findOne({
             _id: objectId,
         });
@@ -197,21 +232,25 @@ export async function PATCH(
             );
         }
 
-        /*
-         * TODO AUTHORIZATION:
-         *
-         * Once the team's authentication implementation is integrated:
-         *
-         * 1. Get the authenticated user from the session.
-         * 2. Reject unauthenticated users.
-         * 3. Verify that the user has the teacher role.
-         * 4. Verify that existingActivity.teacherId belongs to that teacher.
-         */
+        // Verify that the authenticated teacher owns the activity.
+        if (existingActivity.teacherId !== authenticatedUser.id) {
+            return NextResponse.json(
+                {
+                    error: "Forbidden: you do not own this activity.",
+                },
+                { status: 403 },
+            );
+        }
 
         const updatedAt = new Date();
 
+        // Include teacherId in the database filter as an additional
+        // ownership safeguard.
         await collection.updateOne(
-            { _id: objectId },
+            {
+                _id: objectId,
+                teacherId: authenticatedUser.id,
+            },
             {
                 $set: {
                     ...updates,

@@ -7,6 +7,9 @@ import {
 } from "@/db/schema/learning-activity";
 
 import { getDb } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/auth/authorization";
+
+const COLLECTION_NAME = "learning_Activity";
 
 /**
  * Checks whether a value is a valid activity difficulty.
@@ -21,10 +24,40 @@ function isValidDifficulty(value: unknown): value is ActivityDifficulty {
 /**
  * POST /api/activities
  *
- * Validates and creates a new learning activity.
+ * Creates a new learning activity for the authenticated teacher.
  */
 export async function POST(request: NextRequest) {
     try {
+        // Verify that the user is authenticated.
+        const user = await getCurrentUser();
+
+        if (!user) {
+            return NextResponse.json(
+                { error: "Unauthorized." },
+                { status: 401 },
+            );
+        }
+
+        const authenticatedUser = user as {
+            id?: string;
+            role?: string;
+        };
+
+        // Only teachers can create learning activities.
+        if (authenticatedUser.role !== "teacher") {
+            return NextResponse.json(
+                { error: "Forbidden: teacher access required." },
+                { status: 403 },
+            );
+        }
+
+        if (!authenticatedUser.id) {
+            return NextResponse.json(
+                { error: "Unauthorized." },
+                { status: 401 },
+            );
+        }
+
         const body: unknown = await request.json();
 
         if (
@@ -102,26 +135,19 @@ export async function POST(request: NextRequest) {
         };
 
         const db = await getDb();
-
         const now = new Date();
 
-        /*
-         * TODO:
-         * Replace this temporary teacherId after the team's authentication
-         * implementation is integrated.
-         *
-         * T017 requires the authenticated teacher to provide ownership.
-         */
+        // The authenticated teacher becomes the activity owner.
         const activity = {
             ...activityInput,
-            teacherId: null,
+            teacherId: authenticatedUser.id,
             status: "draft",
             createdAt: now,
             updatedAt: now,
         };
 
         const result = await db
-            .collection("learning_Activity")
+            .collection(COLLECTION_NAME)
             .insertOne(activity);
 
         return NextResponse.json(

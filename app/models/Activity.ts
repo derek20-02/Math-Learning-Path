@@ -12,6 +12,17 @@ export const ActivityModel = {
     });
   },
 
+  async findByTeacherId(teacherId: string) {
+    const db = await getDb();
+    return db
+      .collection<Activity>(COLLECTION_NAME)
+      //.find({ teacherId }) 
+      .find({
+        teacherId: { $in: [teacherId, new ObjectId(teacherId)] } as any,
+      }) //PARA PRUEBAS
+      .toArray();
+  },
+
   async findAll() {
     const db = await getDb();
     return db.collection<Activity>(COLLECTION_NAME).find().toArray();

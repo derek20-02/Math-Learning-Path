@@ -4,8 +4,8 @@ export interface Activity {
     description: string,
     objective:string ,
     difficulty:string ,
-    status: boolean,
-    createdAt: Date,
-    updatedAt: Date,
-    teacherId: String
+    status: string,
+    createdAt: string,
+    updatedAt: string,
+    teacherId: string
 }

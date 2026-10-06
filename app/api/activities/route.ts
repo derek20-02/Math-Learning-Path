@@ -54,7 +54,9 @@ export async function GET() {
     const data = activities.map((activity) => {
       const activityId = idString(activity._id);
       const activityExercises = exercises.filter(
-        (exercise) => idString(exercise.activityId) === activityId,
+        (exercise) =>
+          idString(exercise.activityId) === activityId &&
+          exercise.isActive !== false,
       );
       const activityExerciseIds = new Set(
         activityExercises.map((exercise) => idString(exercise._id)),

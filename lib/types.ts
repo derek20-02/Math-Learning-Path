@@ -29,6 +29,7 @@ export type StudentActivity = Activity & {
 export type Exercise = {
   _id: string;
   activityId: string;
+  isActive?: boolean;
   prompt: string;
   answerRules: AnswerRules;
   choices?: string[];
@@ -36,6 +37,11 @@ export type Exercise = {
   //submittedAnswer: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ExerciseAssignmentOption = Omit<Exercise, "activityId"> & {
+  activityId?: string | null;
+  assignedActivityId: string | null;
 };
 
 export type AnswerRules = {

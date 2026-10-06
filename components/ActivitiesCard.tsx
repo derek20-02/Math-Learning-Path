@@ -14,6 +14,11 @@ export default function ActivitiesCard({ activity }: ActivitiesCardProps) {
       <article className="flex h-full flex-col gap-5 rounded-xl activity-card p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
+            <p className="mb-1 text-sm text-[var(--secondaryText)]">
+              {activity.assignedStudents.length
+                ? `Assigned to: ${activity.assignedStudents.join(", ")}`
+                : "No students assigned"}
+            </p>
             <p className="text-sm font-medium text-[var(--secondaryText)]">
               {activity.difficulty}
             </p>

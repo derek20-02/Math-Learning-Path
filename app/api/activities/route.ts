@@ -16,6 +16,31 @@ export async function GET() {
       assignmentsCollection.find({}).toArray(),
     ]);
 
+    const studentIds = [
+      ...new Map(
+        assignments
+          .filter((assignment) => assignment.studentId)
+          .map((assignment) => [
+            idString(assignment.studentId),
+            assignment.studentId,
+          ]),
+      ).values(),
+    ];
+    const students = studentIds.length
+      ? await db
+          .collection("user")
+          .find({ _id: { $in: studentIds } }, { projection: { name: 1 } })
+          .toArray()
+      : [];
+    const studentNamesById = new Map(
+      students.map((student) => [
+        idString(student._id),
+        typeof student.name === "string" && student.name.trim()
+          ? student.name
+          : idString(student._id),
+      ]),
+    );
+
     const exerciseIds = exercises.map((exercise) => exercise._id);
     const submissions = exerciseIds.length
       ? await submissionsCollection
@@ -36,6 +61,14 @@ export async function GET() {
       );
       const activityAssignments = assignments.filter(
         (assignment) => idString(assignment.activityId) === activityId,
+      );
+      const assignedStudentIds = new Set(
+        activityAssignments
+          .filter((assignment) => assignment.studentId)
+          .map((assignment) => idString(assignment.studentId)),
+      );
+      const assignedStudents = [...assignedStudentIds].map(
+        (studentId) => studentNamesById.get(studentId) ?? studentId,
       );
       const assignmentsById = new Map(
         activityAssignments.map((assignment) => [
@@ -71,6 +104,7 @@ export async function GET() {
         id: activityId,
         exerciseCount: activityExercises.length,
         assignmentCount: activityAssignments.length,
+        assignedStudents,
         completedCount,
         totalCount,
         progressPercent: totalCount

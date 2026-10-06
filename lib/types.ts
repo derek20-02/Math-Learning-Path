@@ -14,6 +14,7 @@ export type Activity = {
 
 export type ActivityProgress = Activity & {
   assignmentCount: number;
+  assignedStudents: string[];
   completedCount: number;
   totalCount: number;
   progressPercent: number;

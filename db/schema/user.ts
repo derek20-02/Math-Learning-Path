@@ -1,3 +1,4 @@
+//db/schema/user.ts
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export type UserRole = 'student' | 'teacher';

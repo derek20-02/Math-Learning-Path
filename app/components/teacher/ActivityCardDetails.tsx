@@ -18,11 +18,8 @@ export default async function ActivitiesCard({ activity }: { activity: Activity 
                            <li><strong>Descripción:</strong> {activity.description}</li>
                         <li><strong>Objetivo:</strong> {activity.objective}</li>
                         <li><strong>Creado:</strong> {activity.createdAt}</li>
-                        <li><strong>Actualizado:</strong> {activity.updatedAt}</li>
-
                     </ul>
-                    </div>
-                
+                    </div>               
             )}
         </div>
     );

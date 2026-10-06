@@ -1,4 +1,4 @@
-import ActivitiesDetailsCard from "@/app/components/teacher/ActivityDetailsCard";
+import ActivitiesDetailsCard from "@/app/components/teacher/ActivityCardDetails";
 import { getActivityById } from "@/app/controllers/ActivityController";
 
 export default async function Page({ params }: { params: Promise<{ activityId: string }> }) {

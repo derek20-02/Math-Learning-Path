@@ -1,6 +1,7 @@
 "use client";
 
 import Exercise from "@/components/Exercise";
+import AssignModal from "@/components/AssignModal";
 import type { Exercise as ExerciseData, Submission } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,6 +12,7 @@ export default function ShowExercises() {
   const exerciseId = params.id as string;
   const [exercises, setExercises] = useState<ExerciseData[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [isModelOpen, setIsModelOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/activities/${exerciseId}/exercises`)
@@ -23,6 +25,12 @@ export default function ShowExercises() {
 
   return (
     <>
+    <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
+      
+        <button onClick={() => setIsModelOpen(true)} className="bg-blue-500 text-white mx-4 px-4 py-2 rounded hover:bg-blue-600">
+          Manage Exercises
+        </button>
+      
       {exercises.map((exercise) => (
         <Exercise
           key={exercise._id}
@@ -32,6 +40,10 @@ export default function ShowExercises() {
           )}
         />
       ))}
+      {isModelOpen && (
+        <AssignModal onClose={() => setIsModelOpen(false)} exercises={exercises} />
+      )}
+    </div>
     </>
   );
 }

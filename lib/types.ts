@@ -20,6 +20,21 @@ export type ActivityProgress = Activity & {
   progressPercent: number;
 };
 
+export type StudentOption = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type ActivityStudentAssignment = {
+  id: string;
+  studentId: string;
+  studentName: string;
+  email: string;
+  status: string;
+  assignedAt: string;
+};
+
 export type StudentActivity = Activity & {
   status: ActivityStatus;
   completedExercises: number;

@@ -3,8 +3,10 @@
 import Exercise from "@/components/Exercise";
 import AssignModal from "@/components/AssignModal";
 import type {
+  ActivityStudentAssignment,
   Exercise as ExerciseData,
   ExerciseAssignmentOption,
+  StudentOption,
   Submission,
 } from "@/lib/types";
 import { useParams } from "next/navigation";
@@ -19,6 +21,10 @@ export default function ShowExercises() {
     ExerciseAssignmentOption[]
   >([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [students, setStudents] = useState<StudentOption[]>([]);
+  const [studentAssignments, setStudentAssignments] = useState<
+    ActivityStudentAssignment[]
+  >([]);
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -28,14 +34,26 @@ export default function ShowExercises() {
 
     async function loadExercises() {
       try {
-        const response = await fetch(`/api/activities/${exerciseId}/exercises`);
-        if (!response.ok) throw new Error("Could not load activity exercises.");
-        const result = await response.json();
+        // Load exercise management data and student assignments in parallel.
+        const [exerciseResponse, assignmentResponse] = await Promise.all([
+          fetch(`/api/activities/${exerciseId}/exercises`),
+          fetch(`/api/activities/${exerciseId}/assignments`),
+        ]);
+        if (!exerciseResponse.ok || !assignmentResponse.ok) {
+          throw new Error("Could not load activity management data.");
+        }
+        const [exerciseResult, assignmentResult] = await Promise.all([
+          exerciseResponse.json(),
+          assignmentResponse.json(),
+        ]);
         if (!isCurrent) return;
 
-        setExercises(result.data.exercises);
-        setSubmissions(result.data.submissions);
-        setExerciseOptions(result.data.exerciseOptions);
+        setExercises(exerciseResult.data.exercises);
+        setSubmissions(exerciseResult.data.submissions);
+        setExerciseOptions(exerciseResult.data.exerciseOptions);
+        // These records populate the student selector and its assigned list.
+        setStudents(assignmentResult.data.students);
+        setStudentAssignments(assignmentResult.data.assignments);
       } catch (error) {
         if (isCurrent)
           console.error("Failed to load activity exercises:", error);
@@ -71,6 +89,8 @@ export default function ShowExercises() {
           <AssignModal
             activityId={exerciseId}
             exercises={exerciseOptions}
+            students={students}
+            assignedStudents={studentAssignments}
             onClose={() => setIsModelOpen(false)}
             // Reload assigned exercises after a successful add or remove.
             onUpdated={() => setReloadKey((current) => current + 1)}

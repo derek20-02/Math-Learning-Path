@@ -1,11 +1,17 @@
 "use client";
 
-import type { ExerciseAssignmentOption } from "@/lib/types";
+import type {
+  ActivityStudentAssignment,
+  ExerciseAssignmentOption,
+  StudentOption,
+} from "@/lib/types";
 import { useState } from "react";
 
 type AssignModalProps = {
   activityId: string;
   exercises: ExerciseAssignmentOption[];
+  students: StudentOption[];
+  assignedStudents: ActivityStudentAssignment[];
   onClose: () => void;
   onUpdated: () => void;
 };
@@ -13,6 +19,8 @@ type AssignModalProps = {
 export default function AssignModal({
   activityId,
   exercises,
+  students,
+  assignedStudents,
   onClose,
   onUpdated,
 }: AssignModalProps) {
@@ -22,6 +30,48 @@ export default function AssignModal({
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [studentAssignments, setStudentAssignments] =
+    useState(assignedStudents);
+  const [isAssigningStudent, setIsAssigningStudent] = useState(false);
+  const [studentError, setStudentError] = useState<string | null>(null);
+
+  async function assignStudent() {
+    if (!selectedStudentId) return;
+
+    // Keep the selected student in a pending state until the API responds.
+    setIsAssigningStudent(true);
+    setStudentError(null);
+
+    try {
+      const response = await fetch(
+        `/api/activities/${activityId}/assignments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ studentId: selectedStudentId }),
+        },
+      );
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message ?? "Could not assign this student.");
+      }
+
+      // Update the dialog immediately so the new assignee cannot be selected twice.
+      setStudentAssignments((current) => [...current, result.data.assignment]);
+      setSelectedStudentId("");
+      onUpdated();
+    } catch (assignmentError) {
+      setStudentError(
+        assignmentError instanceof Error
+          ? assignmentError.message
+          : "Could not assign this student.",
+      );
+    } finally {
+      setIsAssigningStudent(false);
+    }
+  }
 
   async function updateAssignment(
     exercise: ExerciseAssignmentOption,
@@ -91,6 +141,63 @@ export default function AssignModal({
         >
           X
         </button>
+        <section className="flex flex-col gap-3 rounded border border-[var(--borders)] p-4">
+          <h2 className="font-semibold text-[var(--primaryText)]">
+            Assign students to this activity
+          </h2>
+          {studentError && <p role="alert">{studentError}</p>}
+          {students.length ? (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <select
+                className="min-w-0 flex-1 rounded border border-[var(--borders)] bg-white px-3 py-2"
+                value={selectedStudentId}
+                onChange={(event) => setSelectedStudentId(event.target.value)}
+                aria-label="Choose a student to assign"
+              >
+                <option value="">Choose a student</option>
+                {students.map((student) => {
+                  // Existing assignees remain visible but cannot be assigned twice.
+                  const alreadyAssigned = studentAssignments.some(
+                    (assignment) => assignment.studentId === student.id,
+                  );
+
+                  return (
+                    <option
+                      key={student.id}
+                      value={student.id}
+                      disabled={alreadyAssigned}
+                    >
+                      {student.name}
+                      {alreadyAssigned ? " (assigned)" : ""}
+                    </option>
+                  );
+                })}
+              </select>
+              <button
+                type="button"
+                className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+                disabled={!selectedStudentId || isAssigningStudent}
+                onClick={() => void assignStudent()}
+              >
+                {isAssigningStudent ? "Saving..." : "Assign student"}
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--secondaryText)]">
+              No student accounts are available.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2" aria-live="polite">
+            {studentAssignments.map((assignment) => (
+              <span
+                key={assignment.id}
+                className="rounded border border-[var(--borders)] px-2 py-1 text-sm text-[var(--primaryText)]"
+              >
+                {assignment.studentName}
+              </span>
+            ))}
+          </div>
+        </section>
         {error && <p role="alert">{error}</p>}
         {exerciseOptions.map((exercise) => {
           // Only the current activity's exercises can be removed from this dialog.
@@ -108,7 +215,9 @@ export default function AssignModal({
               {isAssigned ? (
                 <>
                   <p className="text-sm text-[var(--secondaryText)]">
-                    {isActive ? "Already assigned" : "Inactive for this activity"}
+                    {isActive
+                      ? "Already assigned"
+                      : "Inactive for this activity"}
                   </p>
                   <button
                     type="button"

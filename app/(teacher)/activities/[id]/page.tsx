@@ -50,7 +50,7 @@ export default function ShowExercises() {
 
   return (
     <>
-      <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
+      <div className="flex flex-col gap-4 mt-8 max-w-xl mx-auto w-full">
         <button
           onClick={() => setIsModelOpen(true)}
           className="bg-blue-500 text-white mx-4 px-4 py-2 rounded hover:bg-blue-600"

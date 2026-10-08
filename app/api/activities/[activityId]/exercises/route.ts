@@ -15,6 +15,33 @@ export async function GET(
       return Response.json({ message: "Invalid activity ID" }, { status: 400 });
     }
 
+    const url = new URL(request.url);
+    const studentId = url.searchParams.get("studentId");
+    let assignmentId: ObjectId | null = null;
+
+    if (studentId) {
+      if (!ObjectId.isValid(studentId)) {
+        return Response.json(
+          { message: "Invalid student ID" },
+          { status: 400 },
+        );
+      }
+
+      const assignment = await db.collection("assignment").findOne({
+        activityId: new ObjectId(activityId),
+        studentId: new ObjectId(studentId),
+      });
+
+      if (!assignment) {
+        return Response.json(
+          { message: "This activity is not assigned to this student" },
+          { status: 403 },
+        );
+      }
+
+      assignmentId = assignment._id as ObjectId;
+    }
+
     const exercisesCollection = db.collection("exercise");
     const submissionsCollection = db.collection("submission");
 
@@ -37,7 +64,18 @@ export async function GET(
                 ...exerciseIds.map((exerciseId) => exerciseId.toString()),
               ],
             },
+            ...(assignmentId
+              ? {
+                  assignmentId: {
+                    $in: [assignmentId, assignmentId.toString()],
+                  },
+                  studentId: {
+                    $in: [new ObjectId(studentId!), studentId!],
+                  },
+                }
+              : {}),
           })
+          .sort({ submittedAt: -1 })
           .toArray()
       : [];
 
@@ -48,6 +86,7 @@ export async function GET(
       data: {
         exercises,
         submissions,
+        assignmentId: assignmentId?.toString() ?? null,
         // Normalize the assignment reference for comparison in the client.
         exerciseOptions: exerciseOptions.map((exercise) => ({
           ...exercise,

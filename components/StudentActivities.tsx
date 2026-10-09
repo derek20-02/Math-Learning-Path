@@ -11,11 +11,14 @@ export default function StudentActivities({
 
     return (
         <>
-        <Link href="/(student)/learning-path" className="text-blue-500 hover:underline">
+        <Link href="/learning-path" className="text-blue-500 hover:underline">
             Back to Learning Path
         </Link>
+        {studentActivities.length === 0 && (
+            <h3>There is no activity assigned to you, ask your professor.</h3>
+        )}
         {studentActivities.map((activity) => (
-            <Link href={`/(student)/learning-path/${activity.id}`} className="" key={activity.id}>
+            <Link href={`/learning-path/${activity.id}/exercises`} className="" key={activity.id}>
                 <article className="flex h-full flex-col gap-5 rounded-xl activity-card p-6 shadow-sm">
                     <div className="flex items-start justify-between gap-4">
                     <div>

@@ -49,15 +49,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 export const authOptions: NextAuthOptions = {
+    secret: process.env.NEXTAUTH_SECRET,
     providers,
     callbacks: {
-        async jwt({ token, user, trigger, session }) {
+        async jwt({ token, user }) {
             if (user) {
                 token.role = (user as any).role || 'student';
                 token.id = user.id;
-            }
-            if (trigger === 'update' && session?.role) {
-                token.role = session.role;
             }
             return token;
         },

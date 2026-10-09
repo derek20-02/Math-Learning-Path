@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { authorizeRole } from "@/lib/auth/authorization";
 
 function parseNumericAnswer(value: string): number | null {
   const normalized = value.trim();
@@ -27,17 +28,18 @@ export async function POST(
   },
 ) {
   try {
+    const authorization = await authorizeRole("student");
+    if ("response" in authorization) return authorization.response;
+
     const { activityId, exerciseId } = await params;
-    const { studentId, answer } = (await request.json()) as {
-      studentId?: string;
+    const { answer } = (await request.json()) as {
       answer?: string;
     };
 
     if (
       !ObjectId.isValid(activityId) ||
       !ObjectId.isValid(exerciseId) ||
-      !studentId ||
-      !ObjectId.isValid(studentId) ||
+      !ObjectId.isValid(authorization.user.id) ||
       typeof answer !== "string" ||
       !answer.trim()
     ) {
@@ -47,7 +49,7 @@ export async function POST(
     const db = await getDb();
     const activityObjectId = new ObjectId(activityId);
     const exerciseObjectId = new ObjectId(exerciseId);
-    const studentObjectId = new ObjectId(studentId);
+    const studentObjectId = new ObjectId(authorization.user.id);
     const assignment = await db.collection("assignment").findOne({
       activityId: activityObjectId,
       studentId: studentObjectId,
@@ -80,7 +82,7 @@ export async function POST(
     const previousSubmission = await submissionsCollection.findOne({
       exerciseId: { $in: exerciseIds },
       assignmentId: { $in: assignmentIds },
-      studentId: { $in: [studentObjectId, studentId] },
+      studentId: { $in: [studentObjectId, authorization.user.id] },
     });
 
     if (previousSubmission) {

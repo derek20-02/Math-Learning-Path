@@ -1,8 +1,15 @@
-export default function TeacherLayout({
+import { getCurrentUser } from "@/lib/auth/authorization";
+import { redirect } from "next/navigation";
+
+export default async function TeacherLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const user = await getCurrentUser();
+    if (!user) redirect("/login");
+    if (user.role !== "teacher") redirect("/student");
+
     return (
         <div className="min-h-screen bg-slate-50">
             <header className="border-b bg-white px-6 py-4 shadow-sm">

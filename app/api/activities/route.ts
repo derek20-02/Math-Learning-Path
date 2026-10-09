@@ -1,9 +1,13 @@
 import { getDb } from "@/lib/mongodb";
+import { authorizeRole } from "@/lib/auth/authorization";
 
 const idString = (id: unknown) => String(id);
 
 export async function GET() {
   try {
+    const authorization = await authorizeRole("teacher");
+    if ("response" in authorization) return authorization.response;
+
     // Connect to the database and fetch the collections we need for activities,
     // exercises, assignments, and student submissions.
     const db = await getDb();

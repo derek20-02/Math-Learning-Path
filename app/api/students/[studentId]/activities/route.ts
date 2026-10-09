@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { authorizeRole } from "@/lib/auth/authorization";
 
 const idString = (id: unknown) => String(id);
 
@@ -8,9 +9,15 @@ export async function GET(
   { params }: { params: Promise<{ studentId: string }> },
 ) {
   try {
+    const authorization = await authorizeRole("student");
+    if ("response" in authorization) return authorization.response;
+
     const { studentId } = await params;
     if (!ObjectId.isValid(studentId)) {
       return Response.json({ message: "Invalid student ID" }, { status: 400 });
+    }
+    if (studentId !== authorization.user.id) {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 
     const db = await getDb();

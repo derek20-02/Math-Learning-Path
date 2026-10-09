@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { authorizeRole } from "@/lib/auth/authorization";
 
 const idString = (id: unknown) => String(id);
 
@@ -8,6 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ activityId: string }> },
 ) {
   try {
+    const authorization = await authorizeRole("teacher");
+    if ("response" in authorization) return authorization.response;
+
     const { activityId } = await params;
     if (!ObjectId.isValid(activityId)) {
       return Response.json({ message: "Invalid activity ID" }, { status: 400 });
@@ -76,6 +80,9 @@ export async function POST(
   { params }: { params: Promise<{ activityId: string }> },
 ) {
   try {
+    const authorization = await authorizeRole("teacher");
+    if ("response" in authorization) return authorization.response;
+
     const { activityId } = await params;
     const { studentId } = (await request.json()) as { studentId?: string };
 

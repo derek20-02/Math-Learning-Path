@@ -6,7 +6,9 @@ export default async function TeacherLayout({
 }: {
     children: React.ReactNode;
 }) {
+    // Read the signed-in user's session before rendering any teacher pages.
     const user = await getCurrentUser();
+    // Require login and keep student accounts out of teacher-only pages.
     if (!user) redirect("/login");
     if (user.role !== "teacher") redirect("/student");
 

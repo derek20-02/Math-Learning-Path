@@ -10,6 +10,7 @@ export type AuthenticatedUser = {
 };
 
 export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
+  // NextAuth decrypts the session cookie and exposes the user ID and role here.
   const session = await getServerSession(authOptions);
   const user = session?.user as
     | (DefaultSession["user"] & { id?: unknown; role?: unknown })

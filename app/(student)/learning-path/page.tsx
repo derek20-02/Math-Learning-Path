@@ -3,9 +3,10 @@
 import StudentActivities from "@/components/StudentActivities";
 import type { ActivityProgress } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function StudentActivityPage() {
+// 1. Extraemos la lógica que usa `useSearchParams` a un componente interno
+function StudentActivityContent() {
   const studentId = useSearchParams().get("studentId");
   const [studentActivities, setStudentActivities] = useState<
     ActivityProgress[]
@@ -52,8 +53,7 @@ export default function StudentActivityPage() {
   }, [studentId]);
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-6 md:p-10">
-      <h1 className="text-2xl font-semibold">Activities Dashboard</h1>
+    <>
       {!studentId ? (
         <p role="alert">A studentId query parameter is required.</p>
       ) : loading ? (
@@ -63,6 +63,18 @@ export default function StudentActivityPage() {
       ) : (
         <StudentActivities studentActivities={studentActivities} />
       )}
+    </>
+  );
+}
+
+// 2. Exportamos la página envolviendo el contenido en Suspense
+export default function StudentActivityPage() {
+  return (
+    <main className="flex flex-1 flex-col gap-6 p-6 md:p-10">
+      <h1 className="text-2xl font-semibold">Activities Dashboard</h1>
+      <Suspense fallback={<p role="status">Loading dashboard...</p>}>
+        <StudentActivityContent />
+      </Suspense>
     </main>
   );
 }

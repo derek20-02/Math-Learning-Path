@@ -61,3 +61,11 @@ https://math-learning-path.vercel.app/
 ## Project Tracking with Github Projects
 
 https://github.com/users/derek20-02/projects/1/views/1
+
+## Environment Variables Setup
+
+To run this application locally, you need to configure your environment variables:
+
+1. Duplicate `.env.example` and rename it to `.env.local`:
+   ```bash
+   cp .env.example .env.local

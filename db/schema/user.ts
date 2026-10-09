@@ -1,4 +1,3 @@
-//db/schema/user.ts
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export type UserRole = 'student' | 'teacher';
@@ -19,7 +18,10 @@ const UserSchema = new Schema<IUser>(
         image: { type: String },
         role: { type: String, enum: ['student', 'teacher'], default: 'student', required: true },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+        collection: 'user' // Forzar el uso de la colección "user" en MongoDB Atlas
+    }
 );
 
 export const UserModel: Model<IUser> =

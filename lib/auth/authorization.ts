@@ -32,7 +32,7 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   };
 }
 
-export async function authorizeRole(
+export async function requireRole(
   role: UserRole,
 ): Promise<{ user: AuthenticatedUser } | { response: Response }> {
   const user = await getCurrentUser();

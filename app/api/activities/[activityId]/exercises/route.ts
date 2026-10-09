@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/mongodb";
-import { authorizeRole, getCurrentUser } from "@/lib/auth/authorization";
+import { requireRole, getCurrentUser } from "@/lib/auth/authorization";
 import { ObjectId } from "mongodb";
 
 const idString = (id: unknown) => String(id);
@@ -136,7 +136,7 @@ export async function PATCH(
   { params }: { params: Promise<{ activityId: string }> },
 ) {
   try {
-    const authorization = await authorizeRole("teacher");
+    const authorization = await requireRole("teacher");
     if ("response" in authorization) return authorization.response;
 
     const db = await getDb();

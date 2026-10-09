@@ -1,11 +1,11 @@
 import { MongoClient, type MongoClientOptions } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB_NAME ?? "math_learning_path";
+const dbName = process.env.MONGODB_DB_NAME ?? "math_learning";
 
 if (!uri) {
   throw new Error(
-    "Falta la variable de entorno MONGODB_URI. Defínela en .env.local (ver .env.local.example)."
+    "Falta la variable de entorno MONGODB_URI. Defínela en .env.local (ver .env.local.example).",
   );
 }
 

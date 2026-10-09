@@ -3,10 +3,11 @@
 import StudentActivities from "@/components/StudentActivities";
 import type { ActivityProgress } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
-export default function StudentActivityPage() {
-  const studentId = useSearchParams().get("studentId");
+function StudentActivityContent() {
+  const searchParams = useSearchParams();
+  const studentId = searchParams.get("studentId");
   const [studentActivities, setStudentActivities] = useState<
     ActivityProgress[]
   >([]);
@@ -64,5 +65,13 @@ export default function StudentActivityPage() {
         <StudentActivities studentActivities={studentActivities} />
       )}
     </main>
+  );
+}
+
+export default function StudentActivityPage() {
+  return (
+    <Suspense fallback={<p className="p-6">Loading page...</p>}>
+      <StudentActivityContent />
+    </Suspense>
   );
 }

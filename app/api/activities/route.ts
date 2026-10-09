@@ -1,173 +1,173 @@
+import { NextRequest, NextResponse } from "next/server";
+
+import {
+    ACTIVITY_DIFFICULTIES,
+    ActivityDifficulty,
+    CreateLearningActivityInput,
+} from "@/db/schema/learning-activity";
+
 import { getDb } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/auth/authorization";
 
-const idString = (id: unknown) => String(id);
+const COLLECTION_NAME = "learning_Activity";
 
-export async function GET() {
-  try {
-    // Connect to the database and fetch the collections we need for activities,
-    // exercises, assignments, and student submissions.
-    const db = await getDb();
-    const activitiesCollection = db.collection("learning_Activity");
-    const exercisesCollection = db.collection("exercise");
-    const assignmentsCollection = db.collection("assignment");
-    const submissionsCollection = db.collection("submission");
-
-    // Load all relevant records in parallel to reduce round-trip latency.
-    const [activities, exercises, assignments] = await Promise.all([
-      activitiesCollection.find({}).toArray(),
-      exercisesCollection.find({}).toArray(),
-      assignmentsCollection.find({}).toArray(),
-    ]);
-
-    // Build a unique list of student IDs referenced by assignments so we can
-    // fetch their names in one query rather than repeatedly looking up each user.
-    const studentIds = [
-      ...new Map(
-        assignments
-          .filter((assignment) => assignment.studentId)
-          .map((assignment) => [
-            idString(assignment.studentId),
-            assignment.studentId,
-          ]),
-      ).values(),
-    ];
-
-    // Fetch only the user names needed for assigned students.
-    const students = studentIds.length
-      ? await db
-          .collection("user")
-          .find({ _id: { $in: studentIds } }, { projection: { name: 1 } })
-          .toArray()
-      : [];
-
-    // Map each student ID to a display name. If a user is missing a name,
-    // fall back to their raw ID string so the UI still has a readable value.
-    const studentNamesById = new Map(
-      students.map((student) => [
-        idString(student._id),
-        typeof student.name === "string" && student.name.trim()
-          ? student.name
-          : idString(student._id),
-      ]),
+/**
+ * Checks whether a value is a valid activity difficulty.
+ */
+function isValidDifficulty(value: unknown): value is ActivityDifficulty {
+    return (
+        typeof value === "string" &&
+        ACTIVITY_DIFFICULTIES.includes(value as ActivityDifficulty)
     );
+}
 
-    // Gather all exercise IDs for the current dataset so submissions can be filtered
-    // to only the exercises that actually exist in the system.
-    const exerciseIds = exercises.map((exercise) => exercise._id);
+/**
+ * POST /api/activities
+ *
+ * Creates a new learning activity for the authenticated teacher.
+ */
+export async function POST(request: NextRequest) {
+    try {
+        // Verify that the user is authenticated.
+        const user = await getCurrentUser();
 
-    // Fetch only submitted/graded submissions for these exercises to compute progress.
-    const submissions = exerciseIds.length
-      ? await submissionsCollection
-          .find({
-            exerciseId: { $in: exerciseIds },
-            status: { $in: ["submitted", "graded"] },
-          })
-          .toArray()
-      : [];
-
-    // For each activity, calculate how many exercises/assignments exist and how many
-    // completed pairs are valid based on the submitted work.
-    const data = activities.map((activity) => {
-      const activityId = idString(activity._id);
-
-      // Only active exercises belong to this activity.
-      const activityExercises = exercises.filter(
-        (exercise) =>
-          idString(exercise.activityId) === activityId &&
-          exercise.isActive !== false,
-      );
-
-      // Build a quick lookup for exercise IDs on this activity so we can check
-      // whether a submission belongs to a valid exercise without scanning the full list.
-      const activityExerciseIds = new Set(
-        activityExercises.map((exercise) => idString(exercise._id)),
-      );
-
-      // Collect all assignments linked to this activity.
-      const activityAssignments = assignments.filter(
-        (assignment) => idString(assignment.activityId) === activityId,
-      );
-
-      // Determine which students are assigned to this activity.
-      const assignedStudentIds = new Set(
-        activityAssignments
-          .filter((assignment) => assignment.studentId)
-          .map((assignment) => idString(assignment.studentId)),
-      );
-
-      // Resolve assignment student IDs to names for the response payload.
-      const assignedStudents = [...assignedStudentIds].map(
-        (studentId) => studentNamesById.get(studentId) ?? studentId,
-      );
-
-      // Convenience map for assignments by ID so we can quickly confirm if a submission
-      // references a real assignment in this activity.
-      const assignmentsById = new Map(
-        activityAssignments.map((assignment) => [
-          idString(assignment._id),
-          assignment,
-        ]),
-      );
-
-      // Track unique completed assignment/exercise pairs to avoid double counting when
-      // multiple submissions exist for the same pair.
-      const completedPairs = new Set<string>();
-
-      for (const submission of submissions) {
-        const assignmentId = idString(submission.assignmentId);
-        const exerciseId = idString(submission.exerciseId);
-        const assignment = assignmentsById.get(assignmentId);
-
-        // Ignore submissions for assignments or exercises outside this activity.
-        if (!assignment || !activityExerciseIds.has(exerciseId)) continue;
-
-        // If the assignment has a studentId and submission belongs to another student,
-        // ignore it so we don't count cross-student progress incorrectly.
-        if (
-          assignment.studentId &&
-          submission.studentId &&
-          idString(assignment.studentId) !== idString(submission.studentId)
-        ) {
-          continue;
+        if (!user) {
+            return NextResponse.json(
+                { error: "Unauthorized." },
+                { status: 401 },
+            );
         }
 
-        // Record a unique pair of assignment + exercise as complete.
-        completedPairs.add(`${assignmentId}:${exerciseId}`);
-      }
+        const authenticatedUser = user as {
+            id?: string;
+            role?: string;
+        };
 
-      // Total possible progress for this activity: exercises × assignments.
-      const totalCount = activityExercises.length * activityAssignments.length;
-      const completedCount = completedPairs.size;
+        // Only teachers can create learning activities.
+        if (authenticatedUser.role !== "teacher") {
+            return NextResponse.json(
+                { error: "Forbidden: teacher access required." },
+                { status: 403 },
+            );
+        }
 
-      // Remove _id from the activity object to avoid exposing Mongo's internal identifier
-      // while adding a more UI-friendly id field below.
-      const { _id, ...activityFields } = activity;
+        if (!authenticatedUser.id) {
+            return NextResponse.json(
+                { error: "Unauthorized." },
+                { status: 401 },
+            );
+        }
 
-      return {
-        ...activityFields,
-        id: activityId,
-        exerciseCount: activityExercises.length,
-        assignmentCount: activityAssignments.length,
-        assignedStudents,
-        completedCount,
-        totalCount,
-        progressPercent: totalCount
-          ? Math.round((completedCount / totalCount) * 100)
-          : 0,
-      };
-    });
+        const body: unknown = await request.json();
 
-    // Return the enriched activity list and completion data to the client.
-    return Response.json({
-      message: "Activities and progress retrieved successfully",
-      data,
-    });
-  } catch (error) {
-    // Surface the failure clearly in logs and return a safe 500 response.
-    console.error("Failed to retrieve activities and progress:", error);
-    return Response.json(
-      { message: "Error retrieving activities and progress" },
-      { status: 500 },
-    );
-  }
+        if (
+            typeof body !== "object" ||
+            body === null ||
+            Array.isArray(body)
+        ) {
+            return NextResponse.json(
+                { error: "Invalid request body." },
+                { status: 400 },
+            );
+        }
+
+        const {
+            title,
+            objective,
+            description,
+            difficulty,
+        } = body as Record<string, unknown>;
+
+        // Validate title.
+        if (
+            typeof title !== "string" ||
+            title.trim().length < 3
+        ) {
+            return NextResponse.json(
+                {
+                    error: "Title must contain at least 3 characters.",
+                },
+                { status: 400 },
+            );
+        }
+
+        // Validate objective.
+        if (
+            typeof objective !== "string" ||
+            objective.trim().length < 5
+        ) {
+            return NextResponse.json(
+                {
+                    error: "Objective must contain at least 5 characters.",
+                },
+                { status: 400 },
+            );
+        }
+
+        // Validate description.
+        if (
+            typeof description !== "string" ||
+            description.trim().length < 10
+        ) {
+            return NextResponse.json(
+                {
+                    error: "Description must contain at least 10 characters.",
+                },
+                { status: 400 },
+            );
+        }
+
+        // Validate difficulty.
+        if (!isValidDifficulty(difficulty)) {
+            return NextResponse.json(
+                {
+                    error: "Difficulty must be easy, medium, or hard.",
+                },
+                { status: 400 },
+            );
+        }
+
+        const activityInput: CreateLearningActivityInput = {
+            title: title.trim(),
+            objective: objective.trim(),
+            description: description.trim(),
+            difficulty,
+        };
+
+        const db = await getDb();
+        const now = new Date();
+
+        // The authenticated teacher becomes the activity owner.
+        const activity = {
+            ...activityInput,
+            teacherId: authenticatedUser.id,
+            status: "draft",
+            createdAt: now,
+            updatedAt: now,
+        };
+
+        const result = await db
+            .collection(COLLECTION_NAME)
+            .insertOne(activity);
+
+        return NextResponse.json(
+            {
+                message: "Activity created successfully.",
+                activity: {
+                    id: result.insertedId.toString(),
+                    ...activity,
+                },
+            },
+            { status: 201 },
+        );
+    } catch (error) {
+        console.error("Error creating activity:", error);
+
+        return NextResponse.json(
+            {
+                error: "Unable to create activity.",
+            },
+            { status: 500 },
+        );
+    }
 }

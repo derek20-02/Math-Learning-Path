@@ -5,20 +5,23 @@ import { dbConnect } from '../../db/connect';
 import { UserModel } from '../../db/schema/user';
 import bcrypt from 'bcryptjs';
 
-const providers: NextAuthOptions['providers'] = [
-    CredentialsProvider({
-        name: 'Credentials',
-        credentials: {
-            email: { label: 'Email', type: 'email' },
-            password: { label: 'Password', type: 'password' },
-        },
-        async authorize(credentials) {
-            if (!credentials?.email || !credentials?.password) return null;
-
-            try {
+export const authOptions: NextAuthOptions = {
+    providers: [
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+        }),
+        CredentialsProvider({
+            name: 'Credentials',
+            credentials: {
+                email: { label: 'Email', type: 'email' },
+                password: { label: 'Password', type: 'password' },
+            },
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) return null;
                 await dbConnect();
 
-                const user = await UserModel.findOne({ email: credentials.email.toLowerCase() });
+                const user = await UserModel.findOne({ email: credentials.email });
                 if (!user || !user.password) return null;
 
                 const isValid = await bcrypt.compare(credentials.password, user.password);
@@ -30,26 +33,9 @@ const providers: NextAuthOptions['providers'] = [
                     email: user.email,
                     role: user.role,
                 };
-            } catch (error) {
-                console.error('Error durante la autenticación:', error);
-                return null;
-            }
-        },
-    }),
-];
-
-// Solo agregamos Google Provider si las variables realmente están configuradas en .env.local
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    providers.push(
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        })
-    );
-}
-
-export const authOptions: NextAuthOptions = {
-    providers,
+            },
+        }),
+    ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {
             if (user) {
@@ -70,7 +56,7 @@ export const authOptions: NextAuthOptions = {
         },
     },
     pages: {
-        signIn: '/login', // Apunta a la ruta real de tu formulario de login
+        signIn: '/auth',
     },
     session: { strategy: 'jwt' },
 };

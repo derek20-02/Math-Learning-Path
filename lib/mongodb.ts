@@ -1,7 +1,7 @@
 import { MongoClient, type MongoClientOptions } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB_NAME ?? "math_learning_path";
+const dbName = process.env.MONGODB_DB_NAME ?? "math_learning";
 
 if (!uri) {
   throw new Error(

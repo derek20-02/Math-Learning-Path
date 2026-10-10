@@ -1,6 +1,6 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { authorizeRole } from "@/lib/auth/authorization";
+import { requireRole } from "@/lib/auth/authorization";
 
 const idString = (id: unknown) => String(id);
 
@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ studentId: string }> },
 ) {
   try {
-    const authorization = await authorizeRole("student");
+    const authorization = await requireRole("student");
     if ("response" in authorization) return authorization.response;
 
     const { studentId } = await params;

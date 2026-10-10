@@ -1,6 +1,7 @@
 import { getServerSession, type DefaultSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import type { UserRole } from "@/db/schema/user";
+import { ObjectId } from "mongodb";
 
 export type AuthenticatedUser = {
   id: string;
@@ -8,6 +9,16 @@ export type AuthenticatedUser = {
   name?: string | null;
   email?: string | null;
 };
+
+// Activity records may store teacherId as either an ObjectId or a string.
+export function teacherActivityOwnershipFilter(teacherId: string) {
+  const teacherIdValues: (ObjectId | string)[] = [teacherId];
+  if (ObjectId.isValid(teacherId)) {
+    teacherIdValues.unshift(new ObjectId(teacherId));
+  }
+
+  return { teacherId: { $in: teacherIdValues } };
+}
 
 export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   // NextAuth decrypts the session cookie and exposes the user ID and role here.
@@ -35,6 +46,7 @@ export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
 export async function requireRole(
   role: UserRole,
 ): Promise<{ user: AuthenticatedUser } | { response: Response }> {
+  // Resolve the request's session before allowing access to role-specific data.
   const user = await getCurrentUser();
 
   if (!user) {

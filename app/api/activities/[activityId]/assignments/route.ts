@@ -1,6 +1,9 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { authorizeRole } from "@/lib/auth/authorization";
+import {
+  requireRole,
+  teacherActivityOwnershipFilter,
+} from "@/lib/auth/authorization";
 
 const idString = (id: unknown) => String(id);
 
@@ -9,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ activityId: string }> },
 ) {
   try {
-    const authorization = await authorizeRole("teacher");
+    const authorization = await requireRole("teacher");
     if ("response" in authorization) return authorization.response;
 
     const { activityId } = await params;
@@ -19,9 +22,20 @@ export async function GET(
 
     const db = await getDb();
     const activityObjectId = new ObjectId(activityId);
-    // Load the activity, available student accounts, and existing assignments together.
-    const [activity, students, assignments] = await Promise.all([
-      db.collection("learning_Activity").findOne({ _id: activityObjectId }),
+    const ownedActivityFilter = {
+      _id: activityObjectId,
+      ...teacherActivityOwnershipFilter(authorization.user.id),
+    };
+    // Verify both the requested ID and its owner before returning student data.
+    const activity = await db
+      .collection("learning_Activity")
+      .findOne(ownedActivityFilter);
+    if (!activity) {
+      return Response.json({ message: "Activity not found" }, { status: 404 });
+    }
+
+    // Load student options and current assignments after confirming ownership.
+    const [students, assignments] = await Promise.all([
       db
         .collection("user")
         .find({ role: "student" }, { projection: { name: 1, email: 1 } })
@@ -32,10 +46,6 @@ export async function GET(
         .find({ activityId: activityObjectId })
         .toArray(),
     ]);
-
-    if (!activity) {
-      return Response.json({ message: "Activity not found" }, { status: 404 });
-    }
 
     // Join assignment student IDs to names for the activity manager UI.
     const studentsById = new Map(
@@ -80,7 +90,7 @@ export async function POST(
   { params }: { params: Promise<{ activityId: string }> },
 ) {
   try {
-    const authorization = await authorizeRole("teacher");
+    const authorization = await requireRole("teacher");
     if ("response" in authorization) return authorization.response;
 
     const { activityId } = await params;
@@ -100,9 +110,20 @@ export async function POST(
     const db = await getDb();
     const activityObjectId = new ObjectId(activityId);
     const studentObjectId = new ObjectId(studentId);
-    // Validate both references and check for an existing activity/student pair.
-    const [activity, student, existingAssignment] = await Promise.all([
-      db.collection("learning_Activity").findOne({ _id: activityObjectId }),
+    const ownedActivityFilter = {
+      _id: activityObjectId,
+      ...teacherActivityOwnershipFilter(authorization.user.id),
+    };
+    // Reject attempts to assign students to another teacher's activity.
+    const activity = await db
+      .collection("learning_Activity")
+      .findOne(ownedActivityFilter);
+    if (!activity) {
+      return Response.json({ message: "Activity not found" }, { status: 404 });
+    }
+
+    // Validate the assignee and avoid duplicate activity/student assignments.
+    const [student, existingAssignment] = await Promise.all([
       db.collection("user").findOne({
         _id: studentObjectId,
         role: "student",
@@ -113,9 +134,6 @@ export async function POST(
       }),
     ]);
 
-    if (!activity) {
-      return Response.json({ message: "Activity not found" }, { status: 404 });
-    }
     if (!student) {
       return Response.json({ message: "Student not found" }, { status: 404 });
     }

@@ -1,5 +1,9 @@
 import { getDb } from "@/lib/mongodb";
-import { requireRole, getCurrentUser } from "@/lib/auth/authorization";
+import {
+  getCurrentUser,
+  requireRole,
+  teacherActivityOwnershipFilter,
+} from "@/lib/auth/authorization";
 import { ObjectId } from "mongodb";
 
 const idString = (id: unknown) => String(id);
@@ -23,6 +27,7 @@ export async function GET(
     if (!ObjectId.isValid(activityId)) {
       return Response.json({ message: "Invalid activity ID" }, { status: 400 });
     }
+    const activityObjectId = new ObjectId(activityId);
 
     const url = new URL(request.url);
     const requestedStudentId = url.searchParams.get("studentId");
@@ -38,6 +43,17 @@ export async function GET(
       return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 
+    // Teachers may inspect an activity's exercises only if they own the activity.
+    if (
+      user.role === "teacher" &&
+      !(await db.collection("learning_Activity").findOne({
+        _id: activityObjectId,
+        ...teacherActivityOwnershipFilter(user.id),
+      }))
+    ) {
+      return Response.json({ message: "Activity not found" }, { status: 404 });
+    }
+
     if (studentId) {
       if (!ObjectId.isValid(studentId)) {
         return Response.json(
@@ -47,7 +63,7 @@ export async function GET(
       }
 
       const assignment = await db.collection("assignment").findOne({
-        activityId: new ObjectId(activityId),
+        activityId: activityObjectId,
         studentId: new ObjectId(studentId),
       });
 
@@ -64,8 +80,19 @@ export async function GET(
     const exercisesCollection = db.collection("exercise");
     const submissionsCollection = db.collection("submission");
 
-    // Load the full catalog so the dialog can show assigned and unassigned exercises.
-    const exerciseOptions = await exercisesCollection.find({}).toArray();
+    // Only show this activity's exercises and unassigned exercises in its manager.
+    // The manager can add unassigned exercises, but not take exercises owned by
+    // another activity.
+    const exerciseOptions = await exercisesCollection
+      .find({
+        $or: [
+          { activityId: activityObjectId },
+          { activityId },
+          { activityId: null },
+          { activityId: { $exists: false } },
+        ],
+      })
+      .toArray();
     const exercises = exerciseOptions.filter(
       (exercise) =>
         idString(exercise.activityId) === activityId &&
@@ -159,6 +186,15 @@ export async function PATCH(
     const exercisesCollection = db.collection("exercise");
     const exerciseObjectId = new ObjectId(exerciseId);
     const activityObjectId = new ObjectId(activityId);
+
+    // Confirm ownership before permitting an exercise to be changed in this activity.
+    const activity = await db.collection("learning_Activity").findOne({
+      _id: activityObjectId,
+      ...teacherActivityOwnershipFilter(authorization.user.id),
+    });
+    if (!activity) {
+      return Response.json({ message: "Activity not found" }, { status: 404 });
+    }
 
     let result;
     if (action === "assign") {

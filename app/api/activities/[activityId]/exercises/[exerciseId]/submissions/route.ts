@@ -1,6 +1,6 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { authorizeRole } from "@/lib/auth/authorization";
+import { requireRole } from "@/lib/auth/authorization";
 
 function parseNumericAnswer(value: string): number | null {
   const normalized = value.trim();
@@ -28,7 +28,7 @@ export async function POST(
   },
 ) {
   try {
-    const authorization = await authorizeRole("student");
+    const authorization = await requireRole("student");
     if ("response" in authorization) return authorization.response;
 
     const { activityId, exerciseId } = await params;

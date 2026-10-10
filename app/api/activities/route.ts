@@ -1,5 +1,8 @@
 import { getDb } from "@/lib/mongodb";
-import { requireRole } from "@/lib/auth/authorization";
+import {
+  requireRole,
+  teacherActivityOwnershipFilter,
+} from "@/lib/auth/authorization";
 
 const idString = (id: unknown) => String(id);
 
@@ -16,11 +19,17 @@ export async function GET() {
     const assignmentsCollection = db.collection("assignment");
     const submissionsCollection = db.collection("submission");
 
-    // Load all relevant records in parallel to reduce round-trip latency.
-    const [activities, exercises, assignments] = await Promise.all([
-      activitiesCollection.find({}).toArray(),
-      exercisesCollection.find({}).toArray(),
-      assignmentsCollection.find({}).toArray(),
+    // Limit the list to this teacher's activities before loading progress data.
+    const activities = await activitiesCollection
+      .find(teacherActivityOwnershipFilter(authorization.user.id))
+      .toArray();
+    // Fetch exercises and assignments only for those owned activities.
+    const activityIds = activities.map((activity) => activity._id);
+    const [exercises, assignments] = await Promise.all([
+      exercisesCollection.find({ activityId: { $in: activityIds } }).toArray(),
+      assignmentsCollection
+        .find({ activityId: { $in: activityIds } })
+        .toArray(),
     ]);
 
     // Build a unique list of student IDs referenced by assignments so we can

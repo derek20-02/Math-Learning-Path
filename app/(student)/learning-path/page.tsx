@@ -54,18 +54,19 @@ function StudentActivityContent() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-6 md:p-10">
-      <h1 className="text-2xl font-semibold">Activities Dashboard</h1>
+      <h1 className="text-2xl font-semibold text-black">Activities Dashboard</h1>
       {!studentId ? (
-        <p role="alert">A studentId query parameter is required.</p>
+        <p role="alert" className="text-black">A studentId query parameter is required.</p>
       ) : loading ? (
-        <p role="status">Loading activities...</p>
+        <p role="status" className="text-black">Loading activities...</p>
       ) : error ? (
-        <p role="alert">{error}</p>
+        <p role="alert" className="text-black">{error}</p>
       ) : (
         <StudentActivities studentActivities={studentActivities} />
       )}
     </main>
   );
+
 }
 
 export default function StudentActivityPage() {

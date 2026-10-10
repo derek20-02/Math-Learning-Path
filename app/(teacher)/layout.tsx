@@ -13,7 +13,7 @@ export default async function TeacherLayout({
     if (user.role !== "teacher") redirect("/student");
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="flex flex-1 flex-col bg-slate-50">
             <header className="border-b bg-white px-6 py-4 shadow-sm">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-bold text-indigo-700">Panel de Profesor</h1>
@@ -22,7 +22,7 @@ export default async function TeacherLayout({
                     </span>
                 </div>
             </header>
-            <main className="p-6">{children}</main>
+            <main className="flex-1 p-6">{children}</main>
         </div>
     );
 }

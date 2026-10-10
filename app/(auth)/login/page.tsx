@@ -103,7 +103,7 @@ function LoginFormContent() {
 
 export default function LoginPage() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <div className="flex flex-1 items-center justify-center bg-gray-50 p-4">
             <Suspense fallback={<div className="text-gray-500">Cargando formulario...</div>}>
                 <LoginFormContent />
             </Suspense>

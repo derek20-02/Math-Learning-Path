@@ -2,6 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Authentication environment
+
+Set a stable `NEXTAUTH_SECRET` in `.env.local` before signing in. Generate one
+with `openssl rand -base64 32`; do not commit the generated secret. Use the same
+secret in every app instance and deployment, and update the deployment's
+environment variables when changing it. Changing the secret invalidates
+existing login cookies, so sign in again after a change.
+
 First, run the development server:
 
 ```bash

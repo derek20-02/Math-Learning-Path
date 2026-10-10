@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 // Returns all exercises associated with a given activity ID.
 export default function ShowExercises() {
   const params = useParams();
-  const exerciseId = params.id as string;
+  const exerciseId = params.activityId as string;
   const [exercises, setExercises] = useState<ExerciseData[]>([]);
   const [exerciseOptions, setExerciseOptions] = useState<
     ExerciseAssignmentOption[]

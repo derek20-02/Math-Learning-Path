@@ -18,10 +18,7 @@ const UserSchema = new Schema<IUser>(
         image: { type: String },
         role: { type: String, enum: ['student', 'teacher'], default: 'student', required: true },
     },
-    {
-        timestamps: true,
-        collection: 'user' // Forzar el uso de la colección "user" en MongoDB Atlas
-    }
+    { timestamps: true }
 );
 
 export const UserModel: Model<IUser> =

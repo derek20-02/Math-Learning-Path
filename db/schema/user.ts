@@ -18,7 +18,7 @@ const UserSchema = new Schema<IUser>(
         image: { type: String },
         role: { type: String, enum: ['student', 'teacher'], default: 'student', required: true },
     },
-    { timestamps: true }
+    { timestamps: true, collection: 'user' }
 );
 
 export const UserModel: Model<IUser> =

@@ -6,11 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint",
     "test": "jest"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "mongodb": "^7.7.0",
     "mongoose": "^9.10.1",
     "next": "16.3.4",
     "next-auth": "^4.24.15",
@@ -19,6 +20,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@next/env": "^16.3.8",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

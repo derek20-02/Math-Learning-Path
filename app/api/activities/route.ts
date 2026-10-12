@@ -32,6 +32,7 @@ export async function GET() {
     const activities = await activitiesCollection
       .find(teacherActivityOwnershipFilter(authorization.user.id))
       .toArray();
+
     // Fetch exercises and assignments only for those owned activities.
     const activityIds = activities.map((activity) => activity._id);
     const [exercises, assignments] = await Promise.all([
@@ -71,7 +72,94 @@ export async function GET() {
           ? student.name
           : idString(student._id),
       ]),
+    );
 
+    // Load submissions only for the assignments that belong to these activities.
+    const assignmentIds = assignments.map((assignment) => assignment._id);
+    const submissions = assignmentIds.length
+      ? await submissionsCollection
+          .find({ assignmentId: { $in: assignmentIds } })
+          .toArray()
+      : [];
+
+    // Build the response: each activity with its exercises and assigned students.
+    const result = activities.map((activity) => {
+      const activityKey = idString(activity._id);
+
+      const activityAssignments = assignments.filter(
+        (assignment) => idString(assignment.activityId) === activityKey,
+      );
+      const activityExercises = exercises.filter(
+        (exercise) => idString(exercise.activityId) === activityKey,
+      );
+      const activeExerciseIds = new Set(
+        activityExercises
+          .filter((exercise) => exercise.isActive !== false)
+          .map((exercise) => idString(exercise._id)),
+      );
+      const activityAssignmentIds = new Set(
+        activityAssignments.map((assignment) => idString(assignment._id)),
+      );
+      const completedExerciseAssignments = new Set(
+        submissions
+          .filter(
+            (submission) =>
+              activityAssignmentIds.has(idString(submission.assignmentId)) &&
+              activeExerciseIds.has(idString(submission.exerciseId)) &&
+              ["submitted", "graded"].includes(submission.status),
+          )
+          .map(
+            (submission) =>
+              `${idString(submission.assignmentId)}:${idString(submission.exerciseId)}`,
+          ),
+      );
+      const totalCount = activeExerciseIds.size * activityAssignments.length;
+      const completedCount = completedExerciseAssignments.size;
+
+      return {
+        ...activity,
+        _id: activityKey,
+        id: activityKey,
+        objective: activity.objective ?? activity.title ?? "Untitled activity",
+        exerciseCount: activeExerciseIds.size,
+        assignedStudents: [
+          ...new Set(
+            activityAssignments.map(
+              (assignment) =>
+                studentNamesById.get(idString(assignment.studentId)) ??
+                idString(assignment.studentId),
+            ),
+          ),
+        ],
+        assignmentCount: activityAssignments.length,
+        completedCount,
+        totalCount,
+        progressPercent: totalCount
+          ? Math.round((completedCount / totalCount) * 100)
+          : 0,
+        exercises: activityExercises,
+        assignments: activityAssignments.map((assignment) => ({
+          ...assignment,
+          _id: idString(assignment._id),
+          studentName:
+            studentNamesById.get(idString(assignment.studentId)) ?? null,
+          submissions: submissions.filter(
+            (submission) =>
+              idString(submission.assignmentId) === idString(assignment._id),
+          ),
+        })),
+      };
+    });
+
+    return NextResponse.json({ activities: result });
+  } catch (error) {
+    console.error("Error fetching teacher activities:", error);
+    return NextResponse.json(
+      { error: "No se pudieron cargar las actividades." },
+      { status: 500 },
+    );
+  }
+}
 const COLLECTION_NAME = "learning_Activity";
 
 /**

@@ -1,4 +1,10 @@
-export type Difficulty = "beginner" | "intermediate" | "advanced";
+export type Difficulty =
+  | "easy"
+  | "medium"
+  | "hard"
+  | "beginner"
+  | "intermediate"
+  | "advanced";
 
 export type ActivityStatus = "not-started" | "in-progress" | "completed";
 

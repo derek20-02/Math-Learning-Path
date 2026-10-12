@@ -204,8 +204,10 @@ describe('Integration Test: User Story 6 - exercise management and submissions',
       teacherId: { $in: [teacherId] },
     });
     const result = await response.json();
-    expect(result.data).toHaveLength(1);
-    expect(result.data[0].id).toBe(activityId);
+    expect(result.activities).toHaveLength(1);
+    expect(result.activities[0].id).toBe(activityId);
+    expect(result.activities[0].assignedStudents).toEqual([]);
+    expect(result.activities[0].assignmentCount).toBe(0);
   });
 
   it('does not return exercises when the teacher does not own the activity', async () => {

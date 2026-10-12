@@ -19,8 +19,11 @@ export default function StudentsActivities() {
         });
         if (!response.ok) throw new Error("Could not load activities.");
 
-        const result: { data: ActivityProgress[] } = await response.json();
-        setActivities(result.data);
+        const result: { activities?: ActivityProgress[] } = await response.json();
+        if (!Array.isArray(result.activities)) {
+          throw new Error("Invalid activities response.");
+        }
+        setActivities(result.activities);
       } catch (loadError) {
         if (!controller.signal.aborted) {
           setError(

@@ -70,6 +70,18 @@ export default function Exercise({
           placeholder="Not answered"
         />
       ) : null}
+      {submission && (
+        <p
+          className={`text-sm font-medium ${
+            submission.isCorrect
+              ? "text-[var(--successMsg)]"
+              : "text-[var(--errorMsg)]"
+          }`}
+          role="status"
+        >
+          {submission.isCorrect ? "Correct" : "Incorrect"}
+        </p>
+      )}
     </article>
   );
 }

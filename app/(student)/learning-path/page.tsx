@@ -59,7 +59,7 @@ export default function StudentActivityPage() {
       {loading ? (
         <p role="status">Loading activities...</p>
       ) : error ? (
-        <p role="alert">{error}</p>
+        <p role="alert" className="text-black">{error}</p>
       ) : (
         <StudentActivities studentActivities={studentActivities} />
       )}

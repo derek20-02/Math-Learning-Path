@@ -49,13 +49,13 @@ export default function StudentsActivities() {
         </h1>
       </header>
       {loading ? (
-        <p role="status">Loading activities...</p>
+        <p role="status" className="text-black">Loading activities...</p>
       ) : error ? (
-        <p role="alert">{error}</p>
+        <p role="alert" className="text-black">{error}</p>
       ) : activities.length ? (
         <Activities activities={activities} />
       ) : (
-        <p>No activities found.</p>
+        <p className="text-black">No activities found.</p>
       )}
     </main>
   );

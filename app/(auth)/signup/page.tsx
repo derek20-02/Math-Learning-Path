@@ -62,9 +62,11 @@ export default function SignUpPage() {
                         <input
                             type="text"
                             required
+                            placeholder="Tu nombre completo"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none"
+                            style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none !text-black"
                         />
                     </div>
 
@@ -73,9 +75,11 @@ export default function SignUpPage() {
                         <input
                             type="email"
                             required
+                            placeholder="tu@correo.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none"
+                            style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none !text-black"
                         />
                     </div>
 
@@ -85,9 +89,11 @@ export default function SignUpPage() {
                             type="password"
                             required
                             minLength={6}
+                            placeholder="••••••••"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none"
+                            style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none !text-black"
                         />
                     </div>
 
@@ -96,10 +102,11 @@ export default function SignUpPage() {
                         <select
                             value={formData.role}
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none bg-white"
+                            style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                            className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none !text-black"
                         >
-                            <option value="student">Estudiante</option>
-                            <option value="teacher">Profesor</option>
+                            <option value="student" style={{ color: '#000000', backgroundColor: '#ffffff' }}>Estudiante</option>
+                            <option value="teacher" style={{ color: '#000000', backgroundColor: '#ffffff' }}>Profesor</option>
                         </select>
                     </div>
 

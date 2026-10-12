@@ -9,9 +9,14 @@ export default async function Header() {
   const role = (session?.user as any)?.role;
   const navigation =
     role === "teacher"
-      ? { href: "/activities", label: "Activities" }
+      ? [
+        { href: "/activities", label: "Actividades" },
+        { href: "/activities/new", label: "Crear Actividades" }
+      ]
       : role === "student"
-        ? { href: "/learning-path", label: "Learning Path" }
+        ?[ 
+        { href: "/learning-path", label: "Learning Path" }
+        ]
         : null;
 
   if (!navigation) {
@@ -46,12 +51,16 @@ export default async function Header() {
           aria-label="Primary navigation"
           className="flex shrink-0 items-center gap-2 sm:gap-4"
         >
-          <Link
-            href={navigation.href}
-            className="rounded px-2 py-2 text-sm font-medium text-[var(--primaryText)] hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 sm:px-3"
-          >
-            {navigation.label}
-          </Link>
+          {navigation.map((item) => (
+
+            <Link
+             key={item.href}
+              href={item.href}
+              className="rounded px-2 py-2 text-sm font-medium text-[var(--primaryText)] hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 sm:px-3"
+            >
+              {item.label}
+            </Link>
+          ))}
           <SignOutButton />
         </nav>
       </div>

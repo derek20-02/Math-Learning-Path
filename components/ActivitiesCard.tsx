@@ -14,29 +14,29 @@ export default function ActivitiesCard({ activity }: ActivitiesCardProps) {
       <article className="flex h-full flex-col gap-5 rounded-xl activity-card p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="mb-1 text-sm text-[var(--secondaryText)]">
-              {activity.assignedStudents.length
+            <p className="mb-1 text-sm text-[var(--secondaryText)] text-black">
+              {activity.assignedStudents?.length
                 ? `Assigned to: ${activity.assignedStudents.join(", ")}`
                 : "No students assigned"}
             </p>
-            <p className="text-sm font-medium text-[var(--secondaryText)]">
+            <p className="text-sm font-medium text-[var(--secondaryText)] text-black">
               {activity.difficulty}
             </p>
-            <h2 className="mt-1 text-xl font-semibold text-[var(--primaryText)]">
+            <h2 className="mt-1 text-xl font-semibold text-[var(--primaryText)] text-black">
               {activity.objective}
             </h2>
           </div>
-          <span className="shrink-0 rounded-full border border-[var(--borders)] px-3 py-1 text-xs font-medium text-[var(--primaryText)]">
+          <span className="shrink-0 rounded-full border border-[var(--borders)] px-3 py-1 text-xs font-medium text-[var(--primaryText)] text-black">
             {activity.assignmentCount} assignments
           </span>
         </div>
 
-        <p className="line-clamp-3 text-sm leading-6 text-[var(--primaryText)]">
+        <p className="line-clamp-3 text-sm leading-6 text-[var(--primaryText)] text-black">
           {activity.description}
         </p>
 
         <div className="mt-auto border-t border-[var(--borders)] pt-4">
-          <div className="flex items-center justify-between text-sm text-[var(--primaryText)]">
+          <div className="flex items-center justify-between text-sm text-[var(--primaryText)] text-black">
             <span>
               {activity.completedCount} of {activity.totalCount} assigned
               exercises completed

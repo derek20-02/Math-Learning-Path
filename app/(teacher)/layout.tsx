@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 
-export default function TeacherLayout({
+export default async function TeacherLayout({
     children,
 }: {
     children: React.ReactNode;

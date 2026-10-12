@@ -5,19 +5,15 @@ import { dbConnect } from '../../db/connect';
 import { UserModel } from '../../db/schema/user';
 import bcrypt from 'bcryptjs';
 
-export const authOptions: NextAuthOptions = {
-    providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID || '',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-        }),
-        CredentialsProvider({
-            name: 'Credentials',
-            credentials: {
-                email: { label: 'Email', type: 'email' },
-                password: { label: 'Password', type: 'password' },
-            },
-            async authorize(credentials) {
+const providers: any[] = [
+    CredentialsProvider({
+        name: 'Credentials',
+        credentials: {
+            email: { label: 'Email', type: 'email' },
+            password: { label: 'Password', type: 'password' },
+        },
+        async authorize(credentials) {
+            try {
                 if (!credentials?.email || !credentials?.password) return null;
                 await dbConnect();
 

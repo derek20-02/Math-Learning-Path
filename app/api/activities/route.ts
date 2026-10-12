@@ -13,8 +13,24 @@ import {
   teacherActivityOwnershipFilter,
 } from "@/lib/auth/authorization";
 
+const COLLECTION_NAME = "learning_Activity";
 const idString = (id: unknown) => String(id);
 
+/**
+ * Checks whether a value is a valid activity difficulty.
+ */
+function isValidDifficulty(value: unknown): value is ActivityDifficulty {
+    return (
+        typeof value === "string" &&
+        ACTIVITY_DIFFICULTIES.includes(value as ActivityDifficulty)
+    );
+}
+
+/**
+ * GET /api/activities
+ *
+ * Retrieves the list of learning activities with authorization and filters.
+ */
 export async function GET() {
   try {
     const authorization = await requireRole("teacher");
@@ -23,15 +39,15 @@ export async function GET() {
     // Connect to the database and fetch the collections we need for activities,
     // exercises, assignments, and student submissions.
     const db = await getDb();
-    const activitiesCollection = db.collection("learning_Activity");
+    const activitiesCollection = db.collection(COLLECTION_NAME);
     const exercisesCollection = db.collection("exercise");
     const assignmentsCollection = db.collection("assignment");
-    const submissionsCollection = db.collection("submission");
 
     // Limit the list to this teacher's activities before loading progress data.
     const activities = await activitiesCollection
       .find(teacherActivityOwnershipFilter(authorization.user.id))
       .toArray();
+
     // Fetch exercises and assignments only for those owned activities.
     const activityIds = activities.map((activity) => activity._id);
     const [exercises, assignments] = await Promise.all([
@@ -71,17 +87,29 @@ export async function GET() {
           ? student.name
           : idString(student._id),
       ]),
-
-const COLLECTION_NAME = "learning_Activity";
-
-/**
- * Checks whether a value is a valid activity difficulty.
- */
-function isValidDifficulty(value: unknown): value is ActivityDifficulty {
-    return (
-        typeof value === "string" &&
-        ACTIVITY_DIFFICULTIES.includes(value as ActivityDifficulty)
     );
+
+    const formattedActivities = activities.map((act) => ({
+      id: act._id.toString(),
+      title: act.title,
+      objective: act.objective,
+      description: act.description,
+      difficulty: act.difficulty,
+      status: act.status,
+      teacherId: act.teacherId,
+      createdAt: act.createdAt,
+      updatedAt: act.updatedAt,
+    }));
+
+    return NextResponse.json({ data: formattedActivities }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching activities:", error);
+
+    return NextResponse.json(
+      { error: "Unable to load activities." },
+      { status: 500 },
+    );
+  }
 }
 
 /**

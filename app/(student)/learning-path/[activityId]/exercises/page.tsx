@@ -65,27 +65,27 @@ export default function ShowExercises() {
   return (
     <>
       <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
-        {loading ? (
-          <p role="status">Loading exercises...</p>
-        ) : error ? (
-          <p role="alert">{error}</p>
-        ) : exercises.length && studentId ? (
-          exercises.map((exercise) => (
-            <StudentExercise
-              key={exercise._id}
-              activityId={activityId}
-              studentId={studentId}
-              exercise={exercise}
-              // Match each exercise to this student's saved answer, if any.
-              submission={submissions.find(
-                (item) => item.exerciseId === exercise._id,
-              )}
-            />
-          ))
-        ) : (
-          <p>No active exercises are assigned to this student.</p>
+  {loading ? (
+    <p role="status" className="text-black">Loading exercises...</p>
+  ) : error ? (
+    <p role="alert" className="text-black">{error}</p>
+  ) : exercises.length && studentId ? (
+    exercises.map((exercise) => (
+      <StudentExercise
+        key={exercise._id}
+        activityId={activityId}
+        studentId={studentId}
+        exercise={exercise}
+        // Match each exercise to this student's saved answer, if any.
+        submission={submissions.find(
+          (item) => item.exerciseId === exercise._id,
         )}
-      </div>
+      />
+    ))
+  ) : (
+    <p className="text-black">No active exercises are assigned to this student.</p>
+  )}
+</div>
     </>
   );
 }

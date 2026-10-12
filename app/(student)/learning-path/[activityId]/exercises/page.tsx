@@ -2,21 +2,20 @@
 
 import { StudentExercise } from "@/components/Exercise";
 import type { Exercise, Submission } from "@/lib/types";
-import { useParams, useSearchParams } from "next/navigation";
+import { getSession } from "next-auth/react";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // Returns all exercises associated with a given activity ID.
 export default function ShowExercises() {
   const { activityId } = useParams<{ activityId: string }>();
-  const studentId = useSearchParams().get("studentId");
+  const [studentId, setStudentId] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!studentId) return;
-
     // Ignore an older request if the activity changes or the page unmounts.
     let isCurrent = true;
 
@@ -24,8 +23,18 @@ export default function ShowExercises() {
       try {
         setLoading(true);
         setError(null);
+        const session = await getSession();
+        const authenticatedStudentId = (
+          session?.user as { id?: unknown } | undefined
+        )?.id;
+        if (typeof authenticatedStudentId !== "string") {
+          throw new Error("Could not identify the signed-in student.");
+        }
+        if (!isCurrent) return;
+        setStudentId(authenticatedStudentId);
+
         const response = await fetch(
-          `/api/activities/${activityId}/exercises?studentId=${encodeURIComponent(studentId ?? "")}`,
+          `/api/activities/${activityId}/exercises?studentId=${encodeURIComponent(authenticatedStudentId)}`,
         );
         if (!response.ok) throw new Error("Could not load activity exercises.");
         const result = await response.json();
@@ -51,7 +60,7 @@ export default function ShowExercises() {
     return () => {
       isCurrent = false;
     };
-  }, [activityId, studentId]);
+  }, [activityId]);
 
   return (
     <>

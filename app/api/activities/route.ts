@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/authorization";
 
 import {
     ACTIVITY_DIFFICULTIES,
@@ -7,7 +8,69 @@ import {
 } from "@/db/schema/learning-activity";
 
 import { getDb } from "@/lib/mongodb";
-import { getCurrentUser } from "@/lib/auth/authorization";
+import {
+  requireRole,
+  teacherActivityOwnershipFilter,
+} from "@/lib/auth/authorization";
+
+const idString = (id: unknown) => String(id);
+
+export async function GET() {
+  try {
+    const authorization = await requireRole("teacher");
+    if ("response" in authorization) return authorization.response;
+
+    // Connect to the database and fetch the collections we need for activities,
+    // exercises, assignments, and student submissions.
+    const db = await getDb();
+    const activitiesCollection = db.collection("learning_Activity");
+    const exercisesCollection = db.collection("exercise");
+    const assignmentsCollection = db.collection("assignment");
+    const submissionsCollection = db.collection("submission");
+
+    // Limit the list to this teacher's activities before loading progress data.
+    const activities = await activitiesCollection
+      .find(teacherActivityOwnershipFilter(authorization.user.id))
+      .toArray();
+    // Fetch exercises and assignments only for those owned activities.
+    const activityIds = activities.map((activity) => activity._id);
+    const [exercises, assignments] = await Promise.all([
+      exercisesCollection.find({ activityId: { $in: activityIds } }).toArray(),
+      assignmentsCollection
+        .find({ activityId: { $in: activityIds } })
+        .toArray(),
+    ]);
+
+    // Build a unique list of student IDs referenced by assignments so we can
+    // fetch their names in one query rather than repeatedly looking up each user.
+    const studentIds = [
+      ...new Map(
+        assignments
+          .filter((assignment) => assignment.studentId)
+          .map((assignment) => [
+            idString(assignment.studentId),
+            assignment.studentId,
+          ]),
+      ).values(),
+    ];
+
+    // Fetch only the user names needed for assigned students.
+    const students = studentIds.length
+      ? await db
+          .collection("user")
+          .find({ _id: { $in: studentIds } }, { projection: { name: 1 } })
+          .toArray()
+      : [];
+
+    // Map each student ID to a display name. If a user is missing a name,
+    // fall back to their raw ID string so the UI still has a readable value.
+    const studentNamesById = new Map(
+      students.map((student) => [
+        idString(student._id),
+        typeof student.name === "string" && student.name.trim()
+          ? student.name
+          : idString(student._id),
+      ]),
 
 const COLLECTION_NAME = "learning_Activity";
 

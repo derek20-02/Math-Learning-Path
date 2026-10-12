@@ -2,21 +2,17 @@
 
 import StudentActivities from "@/components/StudentActivities";
 import type { ActivityProgress } from "@/lib/types";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { getSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
-function StudentActivityContent() {
-  const searchParams = useSearchParams();
-  const studentId = searchParams.get("studentId");
+export default function StudentActivityPage() {
   const [studentActivities, setStudentActivities] = useState<
     ActivityProgress[]
   >([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!studentId) return;
-
     const controller = new AbortController();
 
     async function loadStudentActivities() {
@@ -24,8 +20,14 @@ function StudentActivityContent() {
       setError(null);
 
       try {
+        const session = await getSession();
+        const studentId = (session?.user as { id?: unknown } | undefined)?.id;
+        if (typeof studentId !== "string") {
+          throw new Error("Could not identify the signed-in student.");
+        }
+
         const response = await fetch(
-          `/api/students/${encodeURIComponent(studentId ?? "")}/activities`,
+          `/api/students/${encodeURIComponent(studentId)}/activities`,
           { signal: controller.signal },
         );
         const result = await response.json();
@@ -50,29 +52,17 @@ function StudentActivityContent() {
 
     void loadStudentActivities();
     return () => controller.abort();
-  }, [studentId]);
+  }, []);
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-6 md:p-10">
-      <h1 className="text-2xl font-semibold text-black">Activities Dashboard</h1>
-      {!studentId ? (
-        <p role="alert" className="text-black">A studentId query parameter is required.</p>
-      ) : loading ? (
-        <p role="status" className="text-black">Loading activities...</p>
+    <>
+      {loading ? (
+        <p role="status">Loading activities...</p>
       ) : error ? (
         <p role="alert" className="text-black">{error}</p>
       ) : (
         <StudentActivities studentActivities={studentActivities} />
       )}
-    </main>
-  );
-
-}
-
-export default function StudentActivityPage() {
-  return (
-    <Suspense fallback={<p className="p-6">Loading page...</p>}>
-      <StudentActivityContent />
-    </Suspense>
+    </>
   );
 }

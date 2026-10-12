@@ -1,8 +1,19 @@
+import { getCurrentUser } from "@/lib/auth/authorization";
+import { redirect } from "next/navigation";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+
 export default function TeacherLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    // Read the signed-in user's session before rendering any teacher pages.
+    const user = await getCurrentUser();
+    // Require login and keep student accounts out of teacher-only pages.
+    if (!user) redirect("/login");
+    if (user.role !== "teacher") redirect("/student");
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Barra interna específica para el panel de profesor */}

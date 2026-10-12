@@ -56,6 +56,7 @@ export default function StudentActivityPage() {
 
   return (
     <>
+    <div className="container flex flex-col gap-8 mx-auto py-8">
       {loading ? (
         <p role="status">Loading activities...</p>
       ) : error ? (
@@ -63,6 +64,7 @@ export default function StudentActivityPage() {
       ) : (
         <StudentActivities studentActivities={studentActivities} />
       )}
+      </div>
     </>
   );
 }

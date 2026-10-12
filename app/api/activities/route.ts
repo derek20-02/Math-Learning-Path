@@ -36,8 +36,8 @@ export async function GET() {
     const authorization = await requireRole("teacher");
     if ("response" in authorization) return authorization.response;
 
-    // Connect to the database and fetch the collections we need for activities,
-    // exercises, assignments, and student submissions.
+    // Connect to the database and fetch the collections needed for activity
+    // assignments and progress.
     const db = await getDb();
     const activitiesCollection = db.collection(COLLECTION_NAME);
     const exercisesCollection = db.collection("exercise");
@@ -70,6 +70,22 @@ export async function GET() {
       ).values(),
     ];
 
+    const exerciseIds = exercises
+      .filter((exercise) => exercise.isActive !== false)
+      .map((exercise) => exercise._id);
+    const assignmentIds = assignments.map((assignment) => assignment._id);
+    const submissions =
+      exerciseIds.length && assignmentIds.length
+        ? await db
+            .collection("submission")
+            .find({
+              exerciseId: { $in: exerciseIds },
+              assignmentId: { $in: assignmentIds },
+              status: { $in: ["submitted", "graded"] },
+            })
+            .toArray()
+        : [];
+
     // Fetch only the user names needed for assigned students.
     const students = studentIds.length
       ? await db
@@ -89,17 +105,65 @@ export async function GET() {
       ]),
     );
 
-    const formattedActivities = activities.map((act) => ({
-      id: act._id.toString(),
-      title: act.title,
-      objective: act.objective,
-      description: act.description,
-      difficulty: act.difficulty,
-      status: act.status,
-      teacherId: act.teacherId,
-      createdAt: act.createdAt,
-      updatedAt: act.updatedAt,
-    }));
+    const formattedActivities = activities.map((act) => {
+      const activityId = idString(act._id);
+      const activityAssignments = assignments.filter(
+        (assignment) => idString(assignment.activityId) === activityId,
+      );
+      const activityExercises = exercises.filter(
+        (exercise) =>
+          idString(exercise.activityId) === activityId &&
+          exercise.isActive !== false,
+      );
+      const assignedStudents = [
+        ...new Set(
+          activityAssignments.map(
+            (assignment) =>
+              studentNamesById.get(idString(assignment.studentId)) ??
+              idString(assignment.studentId),
+          ),
+        ),
+      ];
+      const activityAssignmentIds = new Set(
+        activityAssignments.map((assignment) => idString(assignment._id)),
+      );
+      const activityExerciseIds = new Set(
+        activityExercises.map((exercise) => idString(exercise._id)),
+      );
+      const completedCount = new Set(
+        submissions
+          .filter(
+            (submission) =>
+              activityAssignmentIds.has(idString(submission.assignmentId)) &&
+              activityExerciseIds.has(idString(submission.exerciseId)),
+          )
+          .map(
+            (submission) =>
+              `${idString(submission.assignmentId)}:${idString(submission.exerciseId)}`,
+          ),
+      ).size;
+      const totalCount = activityExercises.length * activityAssignments.length;
+
+      return {
+        id: activityId,
+        title: act.title,
+        objective: act.objective,
+        description: act.description,
+        difficulty: act.difficulty,
+        status: act.status,
+        teacherId: act.teacherId,
+        createdAt: act.createdAt,
+        updatedAt: act.updatedAt,
+        exerciseCount: activityExercises.length,
+        assignmentCount: activityAssignments.length,
+        assignedStudents,
+        completedCount,
+        totalCount,
+        progressPercent: totalCount
+          ? Math.round((completedCount / totalCount) * 100)
+          : 0,
+      };
+    });
 
     return NextResponse.json({ data: formattedActivities }, { status: 200 });
   } catch (error) {

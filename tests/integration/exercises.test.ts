@@ -208,6 +208,89 @@ describe('Integration Test: User Story 6 - exercise management and submissions',
     expect(result.data[0].id).toBe(activityId);
   });
 
+  it('includes assigned student names in the teacher activity list', async () => {
+    const assignmentId = new ObjectId('507f1f77bcf86cd799439015');
+    const db = {
+      collection: jest.fn((name: string) => {
+        if (name === 'learning_Activity') {
+          return {
+            find: jest.fn().mockReturnValue({
+              toArray: jest.fn().mockResolvedValue([
+                {
+                  _id: new ObjectId(activityId),
+                  objective: 'Practice arithmetic',
+                  description: 'Practice basic arithmetic',
+                  difficulty: 'beginner',
+                },
+              ]),
+            }),
+          };
+        }
+
+        if (name === 'exercise') {
+          return {
+            find: jest.fn().mockReturnValue({
+              toArray: jest.fn().mockResolvedValue([
+                { _id: new ObjectId(exerciseId), activityId: new ObjectId(activityId) },
+              ]),
+            }),
+          };
+        }
+
+        if (name === 'assignment') {
+          return {
+            find: jest.fn().mockReturnValue({
+              toArray: jest.fn().mockResolvedValue([
+                {
+                  _id: assignmentId,
+                  activityId: new ObjectId(activityId),
+                  studentId: new ObjectId(studentId),
+                },
+              ]),
+            }),
+          };
+        }
+
+        if (name === 'user') {
+          return {
+            find: jest.fn().mockReturnValue({
+              toArray: jest.fn().mockResolvedValue([
+                { _id: new ObjectId(studentId), name: 'Ana López' },
+              ]),
+            }),
+          };
+        }
+
+        if (name === 'submission') {
+          return {
+            find: jest.fn().mockReturnValue({
+              toArray: jest.fn().mockResolvedValue([
+                {
+                  assignmentId,
+                  exerciseId: new ObjectId(exerciseId),
+                  status: 'graded',
+                },
+              ]),
+            }),
+          };
+        }
+
+        return {};
+      }),
+    };
+    mockGetDb.mockResolvedValue(db as never);
+
+    const response = await listTeacherActivities();
+
+    expect(response.status).toBe(200);
+    const result = await response.json();
+    expect(result.data[0].assignedStudents).toEqual(['Ana López']);
+    expect(result.data[0].assignmentCount).toBe(1);
+    expect(result.data[0].completedCount).toBe(1);
+    expect(result.data[0].totalCount).toBe(1);
+    expect(result.data[0].progressPercent).toBe(100);
+  });
+
   it('does not return exercises when the teacher does not own the activity', async () => {
     const db = {
       collection: jest.fn((name: string) => {

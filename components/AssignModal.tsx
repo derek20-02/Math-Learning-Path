@@ -124,32 +124,36 @@ export default function AssignModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--primaryText)]/40 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Assign exercises"
-        className="flex max-h-[85vh] w-full max-w-lg flex-col gap-3 overflow-y-auto rounded border border-[var(--borders)] bg-[var(--background)] p-2 shadow-xl"
+        className="flex max-h-[85vh] w-full max-w-lg flex-col gap-3 overflow-y-auto rounded border border-[var(--borders)] bg-[var(--cardBackground)] p-2 text-[var(--primaryText)] shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <button
-          className="self-end px-2 py-1"
+          className="self-end px-2 py-1 text-[var(--secondaryText)] hover:bg-[var(--secondaryText)]  hover:text-white "
           onClick={onClose}
           aria-label="Close dialog"
         >
           X
         </button>
-        <section className="flex flex-col gap-3 rounded border border-[var(--borders)] p-4">
+        <section className="flex flex-col gap-3 rounded border border-[var(--borders)]  p-4">
           <h2 className="font-semibold text-[var(--primaryText)]">
             Assign students to this activity
           </h2>
-          {studentError && <p role="alert">{studentError}</p>}
+          {studentError && (
+            <p role="alert" className="text-[var(--errorMsg)]">
+              {studentError}
+            </p>
+          )}
           {students.length ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <select
-                className="min-w-0 flex-1 rounded border border-[var(--borders)] bg-white px-3 py-2"
+                className="min-w-0 flex-1 rounded border border-[var(--borders)] bg-[var(--cardBackground)] px-3 py-2 text-[var(--primaryText)]"
                 value={selectedStudentId}
                 onChange={(event) => setSelectedStudentId(event.target.value)}
                 aria-label="Choose a student to assign"
@@ -175,7 +179,7 @@ export default function AssignModal({
               </select>
               <button
                 type="button"
-                className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+                className="bg-blue-500 text-white mx-4 px-4 py-2 rounded hover:bg-blue-600"              
                 disabled={!selectedStudentId || isAssigningStudent}
                 onClick={() => void assignStudent()}
               >
@@ -198,7 +202,11 @@ export default function AssignModal({
             ))}
           </div>
         </section>
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p role="alert" className="text-[var(--errorMsg)]">
+            {error}
+          </p>
+        )}
         {exerciseOptions.map((exercise) => {
           // Only the current activity's exercises can be removed from this dialog.
           const isAssigned = exercise.assignedActivityId === activityId;
@@ -209,9 +217,11 @@ export default function AssignModal({
           return (
             <div
               key={exercise._id}
-              className="flex flex-col gap-2 rounded border border-[var(--borders)] p-4"
+              className="flex flex-col gap-2 rounded border border-[var(--borders)]  p-4"
             >
-              <p className="font-semibold">{exercise.prompt}</p>
+              <p className="font-semibold text-[var(--primaryText)]">
+                {exercise.prompt}
+              </p>
               {isAssigned ? (
                 <>
                   <p className="text-sm text-[var(--secondaryText)]">
@@ -221,7 +231,7 @@ export default function AssignModal({
                   </p>
                   <button
                     type="button"
-                    className={`${isActive ? "bg-red-600 hover:bg-red-700" : "bg-blue-500 hover:bg-blue-600"} rounded px-4 py-2 text-white disabled:opacity-50`}
+                    className={`${isActive ? "bg-[var(--errorMsg)] hover:bg-[#b91c1c]" : "bg-[#2563EB] hover:bg-[#1D4ED8]"} rounded px-4 py-2 text-white disabled:opacity-50`}
                     disabled={pendingExerciseId !== null}
                     onClick={() =>
                       void updateAssignment(
@@ -246,7 +256,7 @@ export default function AssignModal({
               ) : (
                 <button
                   type="button"
-                  className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
+                  className="rounded bg-[#2563EB] px-4 py-2 text-white hover:bg-[#1D4ED8] disabled:opacity-50"
                   disabled={pendingExerciseId !== null}
                   onClick={() => void updateAssignment(exercise, "assign")}
                 >

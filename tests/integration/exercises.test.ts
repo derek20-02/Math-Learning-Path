@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { GET as listTeacherActivities } from '@/app/api/activities/route';
-import { GET as getActivityExercises, PATCH as updateExerciseAssignment } from '@/app/api/activities/[activityId]/exercises/route';
+import { GET as getActivityExercises, PATCH as updateExerciseAssignment, POST as createActivityExercise } from '@/app/api/activities/[activityId]/exercises/route';
 import { POST as createAssignment, GET as listAssignments } from '@/app/api/activities/[activityId]/assignments/route';
 import { POST as submitExerciseAnswer } from '@/app/api/activities/[activityId]/exercises/[exerciseId]/submissions/route';
 import { getDb } from '@/lib/mongodb';
@@ -312,6 +312,53 @@ describe('Integration Test: User Story 6 - exercise management and submissions',
     );
 
     expect(response.status).toBe(404);
+  });
+
+  it('creates an active exercise already linked to the teacher activity', async () => {
+    const insertedId = new ObjectId(exerciseId);
+    const insertOne = jest.fn().mockResolvedValue({ insertedId });
+    const db = {
+      collection: jest.fn((name: string) => {
+        if (name === 'learning_Activity') {
+          return {
+            findOne: jest.fn().mockResolvedValue({
+              _id: new ObjectId(activityId),
+              teacherId: new ObjectId(teacherId),
+            }),
+          };
+        }
+
+        if (name === 'exercise') {
+          return { insertOne };
+        }
+
+        return {};
+      }),
+    };
+    mockGetDb.mockResolvedValue(db as never);
+
+    const response = await createActivityExercise(
+      jsonRequest(
+        `http://localhost:3000/api/activities/${activityId}/exercises`,
+        {
+          prompt: 'What is 2 + 3?',
+          answerRules: { type: 'numeric', expected: '5', tolerance: 0 },
+        },
+      ),
+      { params: Promise.resolve({ activityId }) },
+    );
+
+    expect(response.status).toBe(201);
+    expect(insertOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activityId: new ObjectId(activityId),
+        prompt: 'What is 2 + 3?',
+        answerRules: { type: 'numeric', expected: '5', tolerance: 0 },
+        isActive: true,
+      }),
+    );
+    const result = await response.json();
+    expect(result.data.exercise._id).toBe(exerciseId);
   });
 
   it('asigna un ejercicio a una actividad y rechaza el cambio cuando la relación es inválida', async () => {

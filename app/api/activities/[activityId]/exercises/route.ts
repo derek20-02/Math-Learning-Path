@@ -8,6 +8,154 @@ import { ObjectId } from "mongodb";
 
 const idString = (id: unknown) => String(id);
 
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ activityId: string }> },
+) {
+  try {
+    const authorization = await requireRole("teacher");
+    if ("response" in authorization) return authorization.response;
+
+    const { activityId } = await params;
+    if (!ObjectId.isValid(activityId)) {
+      return Response.json({ message: "Invalid activity ID" }, { status: 400 });
+    }
+
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return Response.json({ message: "Invalid exercise data" }, { status: 400 });
+    }
+
+    const { prompt, answerRules, choices } = body as Record<string, unknown>;
+    if (
+      typeof prompt !== "string" ||
+      !prompt.trim() ||
+      !answerRules ||
+      typeof answerRules !== "object" ||
+      Array.isArray(answerRules)
+    ) {
+      return Response.json({ message: "Invalid exercise data" }, { status: 400 });
+    }
+
+    const rules = answerRules as Record<string, unknown>;
+    const supportedTypes = [
+      "multiple-choice",
+      "short-answer",
+      "true-false",
+      "numeric",
+    ];
+    const type = rules.type;
+    const expected = rules.expected;
+
+    if (
+      typeof type !== "string" ||
+      !supportedTypes.includes(type) ||
+      typeof expected !== "string" ||
+      !expected.trim()
+    ) {
+      return Response.json(
+        { message: "Invalid answer rules" },
+        { status: 400 },
+      );
+    }
+
+    let normalizedChoices: string[] | undefined;
+    if (type === "multiple-choice") {
+      if (
+        !Array.isArray(choices) ||
+        choices.length < 2 ||
+        choices.some((choice) => typeof choice !== "string" || !choice.trim())
+      ) {
+        return Response.json(
+          { message: "Multiple-choice exercises need at least two choices" },
+          { status: 400 },
+        );
+      }
+
+      normalizedChoices = [...new Set(choices.map((choice) => choice.trim()))];
+      if (
+        normalizedChoices.length < 2 ||
+        !normalizedChoices.includes(expected.trim())
+      ) {
+        return Response.json(
+          { message: "The expected answer must match one of the choices" },
+          { status: 400 },
+        );
+      }
+    }
+
+    let tolerance: number | undefined;
+    if (type === "numeric" && rules.tolerance !== undefined) {
+      if (
+        typeof rules.tolerance !== "number" ||
+        !Number.isFinite(rules.tolerance) ||
+        rules.tolerance < 0
+      ) {
+        return Response.json(
+          { message: "Tolerance must be a non-negative number" },
+          { status: 400 },
+        );
+      }
+      tolerance = rules.tolerance;
+    }
+
+    if (type === "true-false" && !["true", "false"].includes(expected)) {
+      return Response.json(
+        { message: "True-false exercises must expect true or false" },
+        { status: 400 },
+      );
+    }
+
+    const db = await getDb();
+    const activityObjectId = new ObjectId(activityId);
+    const activity = await db.collection("learning_Activity").findOne({
+      _id: activityObjectId,
+      ...teacherActivityOwnershipFilter(authorization.user.id),
+    });
+    if (!activity) {
+      return Response.json({ message: "Activity not found" }, { status: 404 });
+    }
+
+    const now = new Date();
+    const exercise = {
+      activityId: activityObjectId,
+      prompt: prompt.trim(),
+      answerRules: {
+        type,
+        expected: expected.trim(),
+        ...(tolerance !== undefined ? { tolerance } : {}),
+      },
+      ...(normalizedChoices ? { choices: normalizedChoices } : {}),
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const { insertedId } = await db
+      .collection("exercise")
+      .insertOne(exercise);
+
+    return Response.json(
+      {
+        message: "Exercise created successfully",
+        data: {
+          exercise: {
+            ...exercise,
+            _id: insertedId.toString(),
+            activityId: activityObjectId.toString(),
+          },
+        },
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("Failed to create activity exercise:", error);
+    return Response.json(
+      { message: "Error creating exercise" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ activityId: string }> },

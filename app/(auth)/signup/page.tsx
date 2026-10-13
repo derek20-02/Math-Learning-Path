@@ -30,13 +30,13 @@ export default function SignUpPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Error al registrar usuario');
+                throw new Error(data.error || 'Error registering user');
             }
 
-            // Redirigir al login tras un registro exitoso
+            // Redirect to login after successful registration
             router.push('/login?registered=true');
         } catch (err: any) {
-            setError(err.message || 'Ocurrió un error inesperado');
+            setError(err.message || 'An unexpected error occurred');
         } finally {
             setLoading(false);
         }
@@ -46,8 +46,8 @@ export default function SignUpPage() {
         <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
             <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-8 shadow-md">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-900">Crear una cuenta</h1>
-                    <p className="mt-2 text-sm text-gray-600">Únete a Math Learning Path</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900">Create an account</h1>
+                    <p className="mt-2 text-sm text-gray-600">Join Math Learning Path</p>
                 </div>
 
                 {error && (
@@ -58,11 +58,11 @@ export default function SignUpPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Nombre completo</label>
+                        <label className="block text-sm font-medium text-gray-700">Full name</label>
                         <input
                             type="text"
                             required
-                            placeholder="Tu nombre completo"
+                            placeholder="Your full name"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             style={{ color: '#000000', backgroundColor: '#ffffff' }}
@@ -71,11 +71,11 @@ export default function SignUpPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                        <label className="block text-sm font-medium text-gray-700">Email address</label>
                         <input
                             type="email"
                             required
-                            placeholder="tu@correo.com"
+                            placeholder="you@email.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             style={{ color: '#000000', backgroundColor: '#ffffff' }}
@@ -84,7 +84,7 @@ export default function SignUpPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+                        <label className="block text-sm font-medium text-gray-700">Password</label>
                         <input
                             type="password"
                             required
@@ -98,15 +98,15 @@ export default function SignUpPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Rol</label>
+                        <label className="block text-sm font-medium text-gray-700">Role</label>
                         <select
                             value={formData.role}
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             style={{ color: '#000000', backgroundColor: '#ffffff' }}
                             className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:outline-none !text-black"
                         >
-                            <option value="student" style={{ color: '#000000', backgroundColor: '#ffffff' }}>Estudiante</option>
-                            <option value="teacher" style={{ color: '#000000', backgroundColor: '#ffffff' }}>Profesor</option>
+                            <option value="student" style={{ color: '#000000', backgroundColor: '#ffffff' }}>Student</option>
+                            <option value="teacher" style={{ color: '#000000', backgroundColor: '#ffffff' }}>Teacher</option>
                         </select>
                     </div>
 
@@ -115,14 +115,14 @@ export default function SignUpPage() {
                         disabled={loading}
                         className="w-full rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
                     >
-                        {loading ? 'Registrando...' : 'Registrarse'}
+                        {loading ? 'Registering...' : 'Sign Up'}
                     </button>
                 </form>
 
                 <p className="text-center text-sm text-gray-600">
-                    ¿Ya tienes una cuenta?{' '}
+                    Already have an account?{' '}
                     <Link href="/login" className="font-semibold text-indigo-600 hover:underline">
-                        Inicia sesión aquí
+                        Sign in here
                     </Link>
                 </p>
             </div>

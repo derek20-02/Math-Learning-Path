@@ -138,10 +138,10 @@ export default function ShowExercises() {
           className="flex flex-col gap-3 rounded-lg border border-[var(--borders)] bg-white p-5"
         >
           <h2 className="text-lg font-semibold text-[var(--primaryText)]">
-            Crear Ejercicio
+            Create Exercise
           </h2>
           <label className="flex flex-col gap-1 text-sm text-[var(--primaryText)]">
-            Pregunta
+            Prompt
             <textarea
               required
               minLength={3}
@@ -151,7 +151,7 @@ export default function ShowExercises() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-[var(--primaryText)]">
-            Tipo de Respuesta
+            Answer Type
             <select
               value={answerType}
               onChange={(event) =>
@@ -161,29 +161,29 @@ export default function ShowExercises() {
               }
               className="rounded border border-[var(--borders)] bg-white px-3 py-2"
             >
-              <option value="short-answer">Respuesta Corta</option>
-              <option value="numeric">Numerica</option>
-              <option value="true-false">Verdadero / Falso</option>
-              <option value="multiple-choice">Opción Multiple</option>
+              <option value="short-answer">Short Answer</option>
+              <option value="numeric">Numeric</option>
+              <option value="true-false">True / False</option>
+              <option value="multiple-choice">Multiple Choice</option>
             </select>
           </label>
           {answerType === "true-false" ? (
             <label className="flex flex-col gap-1 text-sm text-[var(--primaryText)]">
-              Respuesta Correcta
+              Correct Answer
               <select
                 value={expectedAnswer}
                 onChange={(event) => setExpectedAnswer(event.target.value)}
                 required
                 className="rounded border border-[var(--borders)] bg-white px-3 py-2"
               >
-                <option value="">Escoge Verdadero o Falso</option>
-                <option value="true">Verdadero</option>
-                <option value="false">Falso</option>
+                <option value="">Choose True or False</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
               </select>
             </label>
           ) : (
             <label className="flex flex-col gap-1 text-sm text-[var(--primaryText)]">
-              Respuesta Correcta
+              Correct Answer
               <input
                 required
                 value={expectedAnswer}
@@ -194,7 +194,7 @@ export default function ShowExercises() {
           )}
           {answerType === "multiple-choice" && (
             <label className="flex flex-col gap-1 text-sm text-[var(--primaryText)]">
-              Escoge (uno por linea)
+              Choices (one per line)
               <textarea
                 required
                 value={choicesText}
@@ -205,7 +205,7 @@ export default function ShowExercises() {
           )}
           {answerType === "numeric" && (
             <label className="flex flex-col gap-1 text-sm text-[var(--primaryText)]">
-              Tolerancia (optional)
+              Tolerance (optional)
               <input
                 type="number"
                 min="0"

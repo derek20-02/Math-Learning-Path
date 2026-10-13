@@ -69,7 +69,7 @@ export default async function EditActivityPage({
             <header className="bg-[#61A8DF] px-6 py-8">
                 <div className="mx-auto max-w-2xl">
                     <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-white/80">
-                        Trayectoria Matemática
+                        Math Path
                     </p>
 
                     <h1 className="text-3xl font-bold text-white">

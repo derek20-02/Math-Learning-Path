@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 // Returns all exercises associated with a given activity ID.
 export default function ShowExercises() {
   const params = useParams();
-  const exerciseId = params.activityId as string;
+  const activityId = params.activityId as string;
   const [exercises, setExercises] = useState<ExerciseData[]>([]);
   const [exerciseOptions, setExerciseOptions] = useState<
     ExerciseAssignmentOption[]
@@ -49,7 +49,7 @@ export default function ShowExercises() {
       .filter(Boolean);
 
     try {
-      const response = await fetch(`/api/activities/${exerciseId}/exercises`, {
+      const response = await fetch(`/api/activities/${activityId}/exercises`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -93,8 +93,8 @@ export default function ShowExercises() {
       try {
         // Load exercise management data and student assignments in parallel.
         const [exerciseResponse, assignmentResponse] = await Promise.all([
-          fetch(`/api/activities/${exerciseId}/exercises`),
-          fetch(`/api/activities/${exerciseId}/assignments`),
+          fetch(`/api/activities/${activityId}/exercises`),
+          fetch(`/api/activities/${activityId}/assignments`),
         ]);
         if (!exerciseResponse.ok || !assignmentResponse.ok) {
           throw new Error("Could not load activity management data.");
@@ -121,7 +121,7 @@ export default function ShowExercises() {
     return () => {
       isCurrent = false;
     };
-  }, [exerciseId, reloadKey]);
+  }, [activityId, reloadKey]);
 
   return (
     <>
@@ -246,7 +246,7 @@ export default function ShowExercises() {
         ))}
         {isModelOpen && (
           <AssignModal
-            activityId={exerciseId}
+            activityId={activityId}
             exercises={exerciseOptions}
             students={students}
             assignedStudents={studentAssignments}

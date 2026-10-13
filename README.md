@@ -42,7 +42,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 - Daniel Israel Tudela Pacheco
 - Derek Abraham Moscui Maldonado
 - Helama Yamashita Barbour
-- Ivan Nivaldo Sanhueza AntrisIvan Nivaldo Sanhueza Antris
+- Ivan Nivaldo Sanhueza Antris
 
 ## Project Description
 
@@ -60,7 +60,7 @@ Math Learning Path is a web application designed to help students develop mathem
 
 - Description: A technical specification document that details the “what” and “why” of the features. It contains the scope, user stories, and acceptance criteria necessary to implement new capabilities using the Spec-Driven Development approach.
 
-`[\specs\001-math-learning-path\spec.md]`
+`\specs\001-math-learning-path\spec.md`
 
 ## Deploy on Vercel
 

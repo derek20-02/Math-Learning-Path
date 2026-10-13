@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import Exercise from "@/components/Exercise";
 import AssignModal from "@/components/AssignModal";
@@ -85,6 +86,18 @@ export default function ShowExercises() {
     }
   }
 
+  function removeExercise(exerciseId: string) {
+    setExercises((current) =>
+      current.filter((exercise) => exercise._id !== exerciseId),
+    );
+    setExerciseOptions((current) =>
+      current.filter((exercise) => exercise._id !== exerciseId),
+    );
+    setSubmissions((current) =>
+      current.filter((submission) => submission.exerciseId !== exerciseId),
+    );
+  }
+
   useEffect(() => {
     // Ignore an older request if the activity changes or the page unmounts.
     let isCurrent = true;
@@ -126,6 +139,12 @@ export default function ShowExercises() {
   return (
     <>
       <div className="flex flex-col gap-4 mt-8 max-w-xl mx-auto w-full">
+       <Link
+         href={`/activities/${activityId}/edit`}
+          className="bg-red-700 text-white mx-4 px-4 py-2 rounded hover:bg-red-900 text-center"
+       >
+          Edit Activity
+          </Link>
         <button
           onClick={() => setIsModelOpen(true)}
           className="bg-blue-500 text-white mx-4 px-4 py-2 rounded hover:bg-blue-600"
@@ -242,6 +261,7 @@ export default function ShowExercises() {
             submission={submissions.find(
               (item) => item.exerciseId === exercise._id,
             )}
+            onDelete={() => removeExercise(exercise._id)}
           />
         ))}
         {isModelOpen && (

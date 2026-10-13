@@ -5,10 +5,48 @@ import { useState } from "react";
 export default function Exercise({
   exercise,
   submission,
+  onDelete,
 }: {
   exercise: Exercise;
   submission: Submission | undefined;
+  onDelete?: () => void;
 }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function deleteExercise() {
+    if (!onDelete || isDeleting) return;
+    if (
+      !window.confirm(
+        "Delete this exercise? Exercises with student submissions cannot be deleted.",
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const response = await fetch(`/api/exercises/${exercise._id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message ?? "Could not delete this exercise.");
+      }
+
+      onDelete();
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : "Could not delete this exercise.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <article className="space-y-3 rounded-lg border border-[var(--borders)] bg-white p-5 shadow-sm m-4 text-black" >
       <h2 className="font-semibold text-[var(--primaryText)]">
@@ -81,6 +119,23 @@ export default function Exercise({
         >
           {submission.isCorrect ? "Correct" : "Incorrect"}
         </p>
+      )}
+      {onDelete && (
+        <div className="flex flex-col items-end gap-2">
+          <button
+            type="button"
+            onClick={() => void deleteExercise()}
+            disabled={isDeleting}
+            className="rounded bg-[var(--errorMsg)] px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isDeleting ? "Deleting..." : "Delete exercise"}
+          </button>
+          {deleteError && (
+            <p role="alert" className="w-full text-left text-sm text-[var(--errorMsg)]">
+              {deleteError}
+            </p>
+          )}
+        </div>
       )}
     </article>
   );
@@ -248,4 +303,3 @@ export function StudentExercise({
     </article>
   );
 }
-

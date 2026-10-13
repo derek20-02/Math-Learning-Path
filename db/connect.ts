@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME ?? 'math_learning';
 
 interface MongooseCache {
     conn: typeof mongoose | null;
@@ -21,7 +22,9 @@ export async function dbConnect() {
     if (cached.conn) return cached.conn;
 
     if (!cached.promise) {
-        cached.promise = mongoose.connect(MONGODB_URI).then((m) => m);
+        cached.promise = mongoose
+    .connect(MONGODB_URI, { dbName: MONGODB_DB_NAME })
+    .then((m) => m);
     }
 
     cached.conn = await cached.promise;

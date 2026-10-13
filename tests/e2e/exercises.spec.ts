@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import TeacherActivityExercisesPage from '../../app/(teacher)/activities/[id]/page';
+import TeacherActivityExercisesPage from '../../app/(teacher)/activities/[activityId]/page';
 import StudentExercisesPage from '../../app/(student)/learning-path/[activityId]/exercises/page';
 import { getSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
@@ -24,7 +24,7 @@ describe('E2E: User Story 6 - exercise manager and student workflow', () => {
   });
 
   it('renderiza la vista docente con los ejercicios y la opción de gestionar asignaciones', async () => {
-    (useParams as jest.Mock).mockReturnValue({ id: activityId });
+    (useParams as jest.Mock).mockReturnValue({ activityId });
 
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
@@ -70,7 +70,7 @@ describe('E2E: User Story 6 - exercise manager and student workflow', () => {
     render(React.createElement(TeacherActivityExercisesPage));
 
     expect(await screen.findByRole('button', { name: /manage exercises/i })).toBeInTheDocument();
-    expect(screen.getByText(/resuelve 2 \+ 3/i)).toBeInTheDocument();
+    expect(await screen.findByText(/resuelve 2 \+ 3/i)).toBeInTheDocument();
   });
 
   it('permite a un estudiante responder un ejercicio y muestra el estado guardado', async () => {

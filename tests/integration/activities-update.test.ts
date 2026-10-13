@@ -317,7 +317,7 @@ describe("PATCH /api/activities/[activityId]", () => {
     });
 
     test("rejects unauthenticated users", async () => {
-        mockedGetCurrentUser.mockResolvedValue(undefined);
+        mockedGetCurrentUser.mockResolvedValue(null);
 
         const request = createRequest({
             objective: "Recognize numerical patterns",

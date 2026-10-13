@@ -159,7 +159,7 @@ describe("POST /api/activities", () => {
     });
 
     test("rejects unauthorized activity creation", async () => {
-        mockedGetCurrentUser.mockResolvedValue(undefined);
+        mockedGetCurrentUser.mockResolvedValue(null);
 
         const request = createRequest({
             title: "Numerical Patterns",
